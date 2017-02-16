@@ -1,5 +1,7 @@
 extern crate nalgebra as na;
+extern crate alga;
 
+pub use na::VectorN as VecN;
 pub use na::Vector1 as Vec1;
 pub use na::Vector2 as Vec2;
 pub use na::Vector3 as Vec3;
@@ -21,8 +23,8 @@ pub use na::Matrix4 as Mat4;
 pub use na::Matrix5 as Mat5;
 pub use na::Matrix6 as Mat6;
 
-pub use na::OrthographicMatrix3 as OrthoMat3;
-pub use na::PerspectiveMatrix3 as PerspMat3;
+pub use na::Orthographic3 as OrthoMat3;
+pub use na::Perspective3 as PerspMat3;
 
 pub use na::Rotation2 as Rot2;
 pub use na::Rotation3 as Rot3;
@@ -32,74 +34,63 @@ pub use na::Quaternion as Quat;
 pub use na::Isometry2 as Iso2;
 pub use na::Isometry3 as Iso3;
 
-pub use na::DVector1 as DVec1;
-pub use na::DVector2 as DVec2;
-pub use na::DVector3 as DVec3;
-pub use na::DVector4 as DVec4;
-pub use na::DVector5 as DVec5;
-pub use na::DVector6 as DVec6;
-
 pub use na::DVector as DVec;
 
 pub use na::DMatrix as DMat;
 
-pub use na::FloatVector as FloatVec;
-
-pub use na::FloatPoint as FloatPnt;
-
 pub use na::UnitQuaternion as UnitQuat;
 
 pub use na::*;
-
+pub use std::mem;
 
 // vec constructors
 #[inline]
-pub fn vec2<T>(x: T, y: T) -> Vec2<T>{
+pub fn vec2<T: Copy + PartialEq + Debug + 'static>(x: T, y: T) -> Vec2<T>{
     Vec2::new(x,y)
 }
 
 #[inline]
-pub fn vec3<T>(x: T, y: T, z: T) -> Vec3<T>{
+pub fn vec3<T: Copy + PartialEq + Debug + 'static>(x: T, y: T, z: T) -> Vec3<T>{
     Vec3::new(x,y,z)
 }
 
 #[inline]
-pub fn vec4<T>(x: T, y: T, z: T, w: T) -> Vec4<T>{
+pub fn vec4<T: Copy + PartialEq + Debug + 'static>(x: T, y: T, z: T, w: T) -> Vec4<T>{
     Vec4::new(x,y,z,w)
 }
 
 #[inline]
-pub fn vec5<T>(x: T, y: T, z: T, w: T, a: T) -> Vec5<T>{
+pub fn vec5<T: Copy + PartialEq + Debug + 'static>(x: T, y: T, z: T, w: T, a: T) -> Vec5<T>{
     Vec5::new(x,y,z,w,a)
 }
 
 #[inline]
-pub fn vec6<T>(x: T, y: T, z: T, w: T, a: T, b: T) -> Vec6<T>{
+pub fn vec6<T: Copy + PartialEq + Debug + 'static>(x: T, y: T, z: T, w: T, a: T, b: T) -> Vec6<T>{
     Vec6::new(x,y,z,w,a,b)
 }
 
 #[inline]
-pub fn pnt2<T>(x: T, y: T) -> Pnt2<T>{
+pub fn pnt2<T: Copy + PartialEq + Debug + 'static>(x: T, y: T) -> Pnt2<T>{
     Pnt2::new(x,y)
 }
 
 #[inline]
-pub fn pnt3<T>(x: T, y: T, z: T) -> Pnt3<T>{
+pub fn pnt3<T: Copy + PartialEq + Debug + 'static>(x: T, y: T, z: T) -> Pnt3<T>{
     Pnt3::new(x,y,z)
 }
 
 #[inline]
-pub fn pnt4<T>(x: T, y: T, z: T, w: T) -> Pnt4<T>{
+pub fn pnt4<T: Copy + PartialEq + Debug + 'static>(x: T, y: T, z: T, w: T) -> Pnt4<T>{
     Pnt4::new(x,y,z,w)
 }
 
 #[inline]
-pub fn pnt5<T>(x: T, y: T, z: T, w: T, a: T) -> Pnt5<T>{
+pub fn pnt5<T: Copy + PartialEq + Debug + 'static>(x: T, y: T, z: T, w: T, a: T) -> Pnt5<T>{
     Pnt5::new(x,y,z,w,a)
 }
 
 #[inline]
-pub fn pnt6<T>(x: T, y: T, z: T, w: T, a: T, b: T) -> Pnt6<T>{
+pub fn pnt6<T: Copy + PartialEq + Debug + 'static>(x: T, y: T, z: T, w: T, a: T, b: T) -> Pnt6<T>{
     Pnt6::new(x,y,z,w,a,b)
 }
 
@@ -122,31 +113,31 @@ pub trait AsVec<T>{
 
 macro_rules! vec_to_pnt_impl{
     ($v: ident, $p: ident) => (
-        impl<T> ToPnt<$p<T>> for $v<T>{
+        impl<T: alga::general::Real> ToPnt<$p<T>> for $v<T>{
             #[inline]
             fn to_pnt(self) -> $p<T>{
-                self.to_point()
+                $p::from_coordinates(self)
             }
         }
 
-        impl<T> AsPnt<$p<T>> for $v<T>{
+        impl<T: alga::general::Real> AsPnt<$p<T>> for $v<T>{
             #[inline]
             fn as_pnt(&self) -> &$p<T>{
-                self.as_point()
+                unsafe{ mem::transmute(self) }
             }
         }
 
-        impl<T> ToVec<$v<T>> for $p<T>{
+        impl<T: alga::general::Real> ToVec<$v<T>> for $p<T>{
             #[inline]
             fn to_vec(self) -> $v<T>{
-                self.to_vector()
+                self.coords
             }
         }
 
-        impl<T> AsVec<$v<T>> for $p<T>{
+        impl<T: alga::general::Real> AsVec<$v<T>> for $p<T>{
             #[inline]
             fn as_vec(&self) -> &$v<T>{
-                self.as_vector()
+                &self.coords
             }
         }
     )
@@ -167,21 +158,16 @@ pub trait AsMat<T>{
     fn as_mat(&self) -> &T;
 }
 
-impl<T: BaseFloat> ToMat<Mat4<T>> for OrthoMat3<T>{
+use std::fmt::Debug;
+
+impl<T: alga::general::Real> ToMat<Mat4<T>> for OrthoMat3<T>{
     fn to_mat(self) -> Mat4<T>{
-        self.to_matrix()
+        self.to_homogeneous()
     }
 }
 
-impl<T: BaseFloat> AsMat<Mat4<T>> for OrthoMat3<T>{
+impl<T: alga::general::Real> AsMat<Mat4<T>> for OrthoMat3<T>{
     fn as_mat(&self) -> &Mat4<T>{
         self.as_matrix()
-    }
-}
-
-impl<T> AsRef<[T;3]> for Vector3<T>{
-    fn as_ref(&self) -> &[T;3]{
-        unsafe{
-            mem::transmute(self)
     }
 }
