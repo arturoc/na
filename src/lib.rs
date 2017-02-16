@@ -178,10 +178,3 @@ impl<T: BaseFloat> AsMat<Mat4<T>> for OrthoMat3<T>{
         self.as_matrix()
     }
 }
-
-impl<T> AsRef<[T;3]> for Vector3<T>{
-    fn as_ref(&self) -> &[T;3]{
-        unsafe{
-            mem::transmute(self)
-    }
-}
