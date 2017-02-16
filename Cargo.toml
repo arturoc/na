@@ -1,0 +1,8 @@
+[package]
+name = "na"
+version = "0.1.0"
+authors = ["arturo castro <arturo@openframeworks.cc>"]
+
+[dependencies]
+nalgebra = "0.10.*"
+alga = "*"
