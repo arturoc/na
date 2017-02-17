@@ -6,3 +6,4 @@ authors = ["arturo castro <arturo@openframeworks.cc>"]
 [dependencies]
 nalgebra = "0.11.*"
 alga = "*"
+num = "*"

@@ -1,5 +1,6 @@
 extern crate nalgebra as na;
 extern crate alga;
+extern crate num;
 
 pub use na::VectorN as VecN;
 pub use na::Vector1 as Vec1;
@@ -42,6 +43,8 @@ pub use na::UnitQuaternion as UnitQuat;
 
 pub use na::*;
 pub use std::mem;
+pub use std::ops::*;
+pub use std::fmt::Debug;
 
 // vec constructors
 #[inline]
@@ -158,7 +161,6 @@ pub trait AsMat<T>{
     fn as_mat(&self) -> &T;
 }
 
-use std::fmt::Debug;
 
 impl<T: alga::general::Real> ToMat<Mat4<T>> for OrthoMat3<T>{
     fn to_mat(self) -> Mat4<T>{
@@ -171,3 +173,113 @@ impl<T: alga::general::Real> AsMat<Mat4<T>> for OrthoMat3<T>{
         self.as_matrix()
     }
 }
+
+pub trait BaseNum: Scalar +
+                   alga::general::Identity<alga::general::Additive> +
+                   alga::general::Identity<alga::general::Multiplicative> +
+                   num::Zero +
+                   num::One +
+                   Add<Self, Output = Self> + Sub<Self, Output = Self> +
+                   Mul<Self, Output = Self> + Div<Self, Output = Self> +
+                   Rem<Self, Output = Self> +
+                   AddAssign<Self> + SubAssign<Self> +
+                   MulAssign<Self> + DivAssign<Self> +
+                   RemAssign<Self> +
+                   PartialOrd +
+                   'static{
+}
+
+impl BaseNum for i8 { }
+impl BaseNum for i16 { }
+impl BaseNum for i32 { }
+impl BaseNum for i64 { }
+//impl BaseNum for isize { }
+impl BaseNum for u8 { }
+impl BaseNum for u16 { }
+impl BaseNum for u32 { }
+impl BaseNum for u64 { }
+//impl BaseNum for usize { }
+impl BaseNum for f32 { }
+impl BaseNum for f64 { }
+
+pub trait BaseInt: BaseNum +
+                   Shl<Self, Output = Self> +
+                   ShlAssign<Self> +
+                   Shr<Self, Output=Self> +
+                   ShrAssign<Self>{}
+
+impl BaseInt for i8 { }
+impl BaseInt for i16 { }
+impl BaseInt for i32 { }
+impl BaseInt for i64 { }
+//impl BaseNum for isize { }
+impl BaseInt for u8 { }
+impl BaseInt for u16 { }
+impl BaseInt for u32 { }
+impl BaseInt for u64 { }
+//impl BaseNum for usize { }
+
+/*
+ * Vector related traits.
+ */
+/// Trait grouping most common operations on vectors.
+pub trait NumVec<N>: Add<Self, Output = Self> + Sub<Self, Output = Self> +
+                        // Mul<Self, Output = Self> + Div<Self, Output = Self> +
+
+                        // Add<N, Output = Self> + Sub<N, Output = Self> +
+                        Mul<N, Output = Self> + Div<N, Output = Self> +
+
+                        AddAssign<Self> + SubAssign<Self> +
+                        // MulAssign<Self> + DivAssign<Self> +
+
+                        // AddAssign<N> + SubAssign<N> +
+                        MulAssign<N> + DivAssign<N> +
+
+                        alga::general::Identity<alga::general::Additive> +
+                        alga::linear::FiniteDimVectorSpace +
+                        PartialEq + Axpy<N>
+                        where Self: Sized {
+}
+
+/// Trait of vector with components implementing the `BaseFloat` trait.
+pub trait FloatVec<N: alga::general::Real>: NumVec<N> +
+                        alga::linear::NormedSpace +
+                        Neg<Output = Self> +
+                        alga::linear::FiniteDimInnerSpace {
+}
+
+
+impl<N: BaseNum + alga::general::AbstractField + Neg<Output=N>> NumVec<N> for Vector1<N>{}
+impl<N: BaseNum + alga::general::AbstractField + Neg<Output=N>> NumVec<N> for Vector2<N>{}
+impl<N: BaseNum + alga::general::AbstractField + Neg<Output=N>> NumVec<N> for Vector3<N>{}
+impl<N: BaseNum + alga::general::AbstractField + Neg<Output=N>> NumVec<N> for Vector4<N>{}
+impl<N: BaseNum + alga::general::AbstractField + Neg<Output=N>> NumVec<N> for Vector5<N>{}
+impl<N: BaseNum + alga::general::AbstractField + Neg<Output=N>> NumVec<N> for Vector6<N>{}
+
+impl<N: BaseNum + alga::general::Real> FloatVec<N> for Vector1<N>{}
+impl<N: BaseNum + alga::general::Real> FloatVec<N> for Vector2<N>{}
+impl<N: BaseNum + alga::general::Real> FloatVec<N> for Vector3<N>{}
+impl<N: BaseNum + alga::general::Real> FloatVec<N> for Vector4<N>{}
+impl<N: BaseNum + alga::general::Real> FloatVec<N> for Vector5<N>{}
+impl<N: BaseNum + alga::general::Real> FloatVec<N> for Vector6<N>{}
+
+pub trait MatRef<T>{
+    fn reference(&self) -> &T;
+}
+
+macro_rules! as_ref_impl{
+    ($v: ident, $n: expr) => (
+        impl<T: Scalar> MatRef<[T;$n]> for $v<T>{
+            fn reference(&self) -> &[T;$n]{
+                unsafe{ mem::transmute(self) }
+            }
+        }
+    )
+}
+
+as_ref_impl!(Vector1,1);
+as_ref_impl!(Vector2,2);
+as_ref_impl!(Vector3,3);
+as_ref_impl!(Vector4,4);
+as_ref_impl!(Vector5,5);
+as_ref_impl!(Vector6,7);
