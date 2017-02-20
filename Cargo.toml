@@ -4,6 +4,9 @@ version = "0.1.0"
 authors = ["arturo castro <arturo@openframeworks.cc>"]
 
 [dependencies]
-nalgebra = "0.11.*"
+nalgebra = "0.11"
 alga = "*"
 num = "*"
+
+#[dependencies.nalgebra]
+#path = "../nalgebra"

@@ -174,6 +174,153 @@ impl<T: alga::general::Real> AsMat<Mat4<T>> for OrthoMat3<T>{
     }
 }
 
+pub trait FastDot<T>{
+    fn fast_dot(&self, right: &Self) -> T;
+}
+
+impl<T:alga::general::Real> FastDot<T> for [T;4]{
+    #[inline]
+    fn fast_dot(&self, right: &[T;4]) -> T{
+        self[0] * right[0] + self[1] * right[1] + self[2] * right[2] + self[3] * right[3]
+    }
+}
+
+impl<T:alga::general::Real> FastDot<T> for [T;3]{
+    #[inline]
+    fn fast_dot(&self, right: &[T;3]) -> T{
+        self[0] * right[0] + self[1] * right[1] + self[2] * right[2]
+    }
+}
+
+impl<T:alga::general::Real> FastDot<T> for Vec4<T>{
+    #[inline]
+    fn fast_dot(&self, right: &Vec4<T>) -> T{
+        self.x * right.x + self.y * right.y + self.z * right.z + self.w * right.w
+    }
+}
+
+impl<T:alga::general::Real> FastDot<T> for Vec3<T>{
+    #[inline]
+    fn fast_dot(&self, right: &Vec3<T>) -> T{
+        self.x * right.x + self.y * right.y + self.z * right.z
+    }
+}
+
+
+
+pub trait FastMul<T>{
+    type Output;
+    fn fast_mul(&self, right: &T) -> Self::Output;
+}
+
+impl<T:alga::general::Real> FastMul<Mat4<T>> for Mat4<T>{
+    type Output = Mat4<T>;
+    #[inline]
+    fn fast_mul(&self, right: &Mat4<T>) -> Mat4<T>{
+        let row0 = [self.m11, self.m12, self.m13, self.m14];
+        let row1 = [self.m21, self.m22, self.m23, self.m24];
+        let row2 = [self.m31, self.m32, self.m33, self.m34];
+        let row3 = [self.m41, self.m42, self.m43, self.m44];
+        let col0 = [right.m11, right.m21, right.m31, right.m41];
+        let col1 = [right.m12, right.m22, right.m32, right.m42];
+        let col2 = [right.m13, right.m23, right.m33, right.m43];
+        let col3 = [right.m14, right.m24, right.m34, right.m44];
+        Mat4::new(
+            row0.fast_dot(&col0), row0.fast_dot(&col1), row0.fast_dot(&col2), row0.fast_dot(&col3),
+            row1.fast_dot(&col0), row1.fast_dot(&col1), row1.fast_dot(&col2), row1.fast_dot(&col3),
+            row2.fast_dot(&col0), row2.fast_dot(&col1), row2.fast_dot(&col2), row2.fast_dot(&col3),
+            row3.fast_dot(&col0), row3.fast_dot(&col1), row3.fast_dot(&col2), row3.fast_dot(&col3),
+        )
+    }
+}
+
+impl<T:alga::general::Real> FastMul<Vec4<T>> for Mat4<T>{
+    type Output = Vec4<T>;
+    #[inline]
+    fn fast_mul(&self, right: &Vec4<T>) -> Vec4<T>{
+        let row0 = [self.m11, self.m12, self.m13, self.m14];
+        let row1 = [self.m21, self.m22, self.m23, self.m24];
+        let row2 = [self.m31, self.m32, self.m33, self.m34];
+        let row3 = [self.m41, self.m42, self.m43, self.m44];
+        let right = right.as_ref();
+        Vec4::new(
+            row0.fast_dot(right), row1.fast_dot(right), row2.fast_dot(right), row3.fast_dot(right)
+        )
+    }
+}
+
+impl<T:alga::general::Real> FastMul<Mat3<T>> for Mat3<T>{
+    type Output = Mat3<T>;
+    #[inline]
+    fn fast_mul(&self, right: &Mat3<T>) -> Mat3<T>{
+        let row0 = [self.m11, self.m12, self.m13];
+        let row1 = [self.m21, self.m22, self.m23];
+        let row2 = [self.m31, self.m32, self.m33];
+        let col0 = [right.m11, right.m21, right.m31];
+        let col1 = [right.m12, right.m22, right.m32];
+        let col2 = [right.m13, right.m23, right.m33];
+        Mat3::new(
+            row0.fast_dot(&col0), row0.fast_dot(&col1), row0.fast_dot(&col2),
+            row1.fast_dot(&col0), row1.fast_dot(&col1), row1.fast_dot(&col2),
+            row2.fast_dot(&col0), row2.fast_dot(&col1), row2.fast_dot(&col2),
+        )
+    }
+}
+
+impl<T:alga::general::Real> FastMul<Vec3<T>> for Mat3<T>{
+    type Output = Vec3<T>;
+    #[inline]
+    fn fast_mul(&self, right: &Vec3<T>) -> Vec3<T>{
+        let row0 = [self.m11, self.m12, self.m13];
+        let row1 = [self.m21, self.m22, self.m23];
+        let row2 = [self.m31, self.m32, self.m33];
+        let right = right.as_ref();
+        Vec3::new(
+            row0.fast_dot(right), row1.fast_dot(right), row2.fast_dot(right)
+        )
+    }
+}
+
+pub trait FastInverse{
+    fn fast_orthonormal_inverse(&self) -> Self;
+    fn fast_affine_inverse(&self) -> Self;
+}
+
+impl<T:alga::general::Real> FastInverse for Mat4<T>{
+    fn fast_orthonormal_inverse(&self) -> Mat4<T>{
+        let _3x3 = Mat3::new(
+            self.m11, self.m21, self.m31,
+            self.m12, self.m22, self.m32,
+            self.m13, self.m23, self.m33,
+        );
+        let pos = vec3(self.m14, self.m24, self.m34);
+        let pos = -_3x3.fast_mul(&pos);
+        Mat4::new(
+            self.m11, self.m21, self.m31, pos.x,
+            self.m12, self.m22, self.m32, pos.y,
+            self.m13, self.m23, self.m33, pos.z,
+            zero(),   zero(),   zero(),   one()                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                ,
+        )
+    }
+
+    fn fast_affine_inverse(&self) -> Mat4<T>{
+        let _3x3 = Mat3::new(
+            self.m11, self.m12, self.m13,
+            self.m21, self.m22, self.m23,
+            self.m31, self.m32, self.m33,
+        ).try_inverse().unwrap();
+
+        let pos = vec3(self.m14, self.m24, self.m34);
+        let pos = -_3x3.fast_mul(&pos);
+        Mat4::new(
+            _3x3.m11, _3x3.m12, _3x3.m13, pos.x,
+            _3x3.m21, _3x3.m22, _3x3.m23, pos.y,
+            _3x3.m31, _3x3.m32, _3x3.m33, pos.z,
+            zero(),   zero(),   zero(),   one()                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                ,
+        )
+    }
+}
+
 pub trait BaseNum: Scalar +
                    alga::general::Identity<alga::general::Additive> +
                    alga::general::Identity<alga::general::Multiplicative> +
@@ -193,12 +340,12 @@ impl BaseNum for i8 { }
 impl BaseNum for i16 { }
 impl BaseNum for i32 { }
 impl BaseNum for i64 { }
-//impl BaseNum for isize { }
+impl BaseNum for isize { }
 impl BaseNum for u8 { }
 impl BaseNum for u16 { }
 impl BaseNum for u32 { }
 impl BaseNum for u64 { }
-//impl BaseNum for usize { }
+impl BaseNum for usize { }
 impl BaseNum for f32 { }
 impl BaseNum for f64 { }
 
@@ -212,12 +359,12 @@ impl BaseInt for i8 { }
 impl BaseInt for i16 { }
 impl BaseInt for i32 { }
 impl BaseInt for i64 { }
-//impl BaseNum for isize { }
+impl BaseInt for isize { }
 impl BaseInt for u8 { }
 impl BaseInt for u16 { }
 impl BaseInt for u32 { }
 impl BaseInt for u64 { }
-//impl BaseNum for usize { }
+impl BaseInt for usize { }
 
 /*
  * Vector related traits.
@@ -262,24 +409,3 @@ impl<N: BaseNum + alga::general::Real> FloatVec<N> for Vector3<N>{}
 impl<N: BaseNum + alga::general::Real> FloatVec<N> for Vector4<N>{}
 impl<N: BaseNum + alga::general::Real> FloatVec<N> for Vector5<N>{}
 impl<N: BaseNum + alga::general::Real> FloatVec<N> for Vector6<N>{}
-
-pub trait MatRef<T>{
-    fn reference(&self) -> &T;
-}
-
-macro_rules! as_ref_impl{
-    ($v: ident, $n: expr) => (
-        impl<T: Scalar> MatRef<[T;$n]> for $v<T>{
-            fn reference(&self) -> &[T;$n]{
-                unsafe{ mem::transmute(self) }
-            }
-        }
-    )
-}
-
-as_ref_impl!(Vector1,1);
-as_ref_impl!(Vector2,2);
-as_ref_impl!(Vector3,3);
-as_ref_impl!(Vector4,4);
-as_ref_impl!(Vector5,5);
-as_ref_impl!(Vector6,7);
