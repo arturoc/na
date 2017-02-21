@@ -5,10 +5,10 @@ authors = ["arturo castro <arturo@openframeworks.cc>"]
 
 [dependencies]
 nalgebra = "0.11"
-alga = "*"
+alga = "0.5"
 num = "*"
-typenum = "*"
-generic-array = "*"
+typenum = "1.4"
+generic-array = "0.2"
 
 #[dependencies.nalgebra]
 #path = "../nalgebra"
