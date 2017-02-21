@@ -67,8 +67,10 @@ impl<V> IntoVec<V> for V{
     }
 }
 
-impl<T:Scalar,D: DimName> IntoVec<VectorN<T,D>> for T
-    where <D as DimName>::Value: Mul<UInt<UTerm, bit::B1>>,
+impl<T,D> IntoVec<VectorN<T,D>> for T
+    where T:Scalar,
+          D: DimName,
+          <D as DimName>::Value: Mul<UInt<UTerm, bit::B1>>,
           <<D as DimName>::Value as Mul<UInt<UTerm, B1>>>::Output: ArrayLength<T>{
     #[inline]
     fn into_vec(self) -> VectorN<T,D>{
