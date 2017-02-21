@@ -7,6 +7,8 @@ authors = ["arturo castro <arturo@openframeworks.cc>"]
 nalgebra = "0.11"
 alga = "*"
 num = "*"
+typenum = "*"
+generic-array = "*"
 
 #[dependencies.nalgebra]
 #path = "../nalgebra"
