@@ -582,7 +582,7 @@ macro_rules! pnt2{
     });
     ($v1: expr) => ({
         use $crate::traits::IntoPnt;
-        let v: Point2<_> = $v1.into_vec();
+        let v: Point2<_> = $v1.into_pnt();
         v
     });
 }
@@ -598,7 +598,7 @@ macro_rules! pnt3{
     });
     ($v1: expr) => ({
         use $crate::traits::IntoPnt;
-        let v: Point3<_> = $v1.into_vec();
+        let v: Point3<_> = $v1.into_pnt();
         v
     });
 }
@@ -618,7 +618,7 @@ macro_rules! pnt4{
     });
     ($v1: expr) => ({
         use $crate::traits::IntoPnt;
-        let v: Vector4<_> = $v1.into_vec();
+        let v: Vector4<_> = $v1.into_pnt();
         v
     });
 }
@@ -731,6 +731,11 @@ swizzles2_slice_impl!(U6,Vector2);
 pub trait Swizzles3<T: Scalar>: Swizzles2<T>{
     type Swizzle3;
     fn xyz(&self) -> Self::Swizzle3;
+    fn xzy(&self) -> Self::Swizzle3;
+    fn yxz(&self) -> Self::Swizzle3;
+    fn yzx(&self) -> Self::Swizzle3;
+    fn zxy(&self) -> Self::Swizzle3;
+    fn zyx(&self) -> Self::Swizzle3;
     fn yz(&self) -> Self::Swizzle2;
     fn xz(&self) -> Self::Swizzle2;
     fn zy(&self) -> Self::Swizzle2;
@@ -739,6 +744,11 @@ pub trait Swizzles3<T: Scalar>: Swizzles2<T>{
 
 pub trait Swizzles3Mut<T: Scalar>: Swizzles2Mut<T> + Swizzles3<T>{
     fn set_xyz(&mut self, right: &Self::Swizzle3);
+    fn set_xzy(&mut self, right: &Self::Swizzle3);
+    fn set_yxz(&mut self, right: &Self::Swizzle3);
+    fn set_yzx(&mut self, right: &Self::Swizzle3);
+    fn set_zxy(&mut self, right: &Self::Swizzle3);
+    fn set_zyx(&mut self, right: &Self::Swizzle3);
     fn set_yz(&mut self, right: &Self::Swizzle2);
     fn set_xz(&mut self, right: &Self::Swizzle2);
     fn set_zy(&mut self, right: &Self::Swizzle2);
@@ -751,6 +761,26 @@ macro_rules! swizzles3_impl{
             type Swizzle3 = $o<T>;
             fn xyz(&self) -> $o<T>{
                 $o::new(self.x, self.y, self.z)
+            }
+
+            fn xzy(&self) -> $o<T>{
+                $o::new(self.x, self.z, self.y)
+            }
+
+            fn yxz(&self) -> $o<T>{
+                $o::new(self.y, self.x, self.z)
+            }
+
+            fn yzx(&self) -> $o<T>{
+                $o::new(self.y, self.z, self.x)
+            }
+
+            fn zxy(&self) -> $o<T>{
+                $o::new(self.z, self.x, self.y)
+            }
+
+            fn zyx(&self) -> $o<T>{
+                $o::new(self.z, self.y, self.x)
             }
 
             fn yz(&self) -> Self::Swizzle2{
@@ -775,6 +805,36 @@ macro_rules! swizzles3_impl{
                 self.x = right.x;
                 self.y = right.y;
                 self.z = right.z;
+            }
+
+            fn set_xzy(&mut self, right: &$o<T>){
+                self.x = right.x;
+                self.z = right.y;
+                self.y = right.z;
+            }
+
+            fn set_yxz(&mut self, right: &$o<T>){
+                self.y = right.x;
+                self.x = right.y;
+                self.z = right.z;
+            }
+
+            fn set_yzx(&mut self, right: &$o<T>){
+                self.y = right.x;
+                self.z = right.y;
+                self.x = right.z;
+            }
+
+            fn set_zxy(&mut self, right: &$o<T>){
+                self.z = right.x;
+                self.x = right.y;
+                self.y = right.z;
+            }
+
+            fn set_zyx(&mut self, right: &$o<T>){
+                self.z = right.x;
+                self.y = right.y;
+                self.x = right.z;
             }
 
             fn set_yz(&mut self, right: &Self::Swizzle2){
@@ -826,6 +886,26 @@ macro_rules! swizzles3_slice_impl{
                 $o::new(self[0], self[1], self[2])
             }
 
+            fn xzy(&self) -> $o<T>{
+                $o::new(self[0], self[2], self[1])
+            }
+
+            fn yxz(&self) -> $o<T>{
+                $o::new(self[1], self[0], self[2])
+            }
+
+            fn yzx(&self) -> $o<T>{
+                $o::new(self[1], self[2], self[0])
+            }
+
+            fn zxy(&self) -> $o<T>{
+                $o::new(self[2], self[0], self[1])
+            }
+
+            fn zyx(&self) -> $o<T>{
+                $o::new(self[2], self[1], self[0])
+            }
+
             fn yz(&self) -> Self::Swizzle2{
                 Self::Swizzle2::new(self[1], self[2])
             }
@@ -851,6 +931,26 @@ macro_rules! swizzles3_slice_impl{
             type Swizzle3 = $o<T>;
             fn xyz(&self) -> $o<T>{
                 $o::new(self[0], self[1], self[2])
+            }
+
+            fn xzy(&self) -> $o<T>{
+                $o::new(self[0], self[2], self[1])
+            }
+
+            fn yxz(&self) -> $o<T>{
+                $o::new(self[1], self[0], self[2])
+            }
+
+            fn yzx(&self) -> $o<T>{
+                $o::new(self[1], self[2], self[0])
+            }
+
+            fn zxy(&self) -> $o<T>{
+                $o::new(self[2], self[0], self[1])
+            }
+
+            fn zyx(&self) -> $o<T>{
+                $o::new(self[2], self[1], self[0])
             }
 
             fn yz(&self) -> Self::Swizzle2{
@@ -879,6 +979,36 @@ macro_rules! swizzles3_slice_impl{
                           self[0] = right.x;
                           self[1] = right.y;
                           self[2] = right.z;
+                      }
+
+                      fn set_xzy(&mut self, right: &$o<T>){
+                          self[0] = right.x;
+                          self[2] = right.y;
+                          self[1] = right.z;
+                      }
+
+                      fn set_yxz(&mut self, right: &$o<T>){
+                          self[1] = right.x;
+                          self[0] = right.y;
+                          self[2] = right.z;
+                      }
+
+                      fn set_yzx(&mut self, right: &$o<T>){
+                          self[1] = right.x;
+                          self[2] = right.y;
+                          self[0] = right.z;
+                      }
+
+                      fn set_zxy(&mut self, right: &$o<T>){
+                          self[2] = right.x;
+                          self[0] = right.y;
+                          self[1] = right.z;
+                      }
+
+                      fn set_zyx(&mut self, right: &$o<T>){
+                          self[2] = right.x;
+                          self[1] = right.y;
+                          self[0] = right.z;
                       }
 
                       fn set_yz(&mut self, right: &Self::Swizzle2){
