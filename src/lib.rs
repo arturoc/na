@@ -356,7 +356,7 @@ impl<T:alga::general::Real> FastMul<Vector4<T>> for Matrix4<T>{
 
 pub trait FastInverse{
     fn fast_orthonormal_inverse(&self) -> Self;
-    fn fast_affine_inverse(&self) -> Self;
+    fn fast_affine_inverse(&self) -> Option<Self> where Self: Sized;
 }
 
 impl<T:alga::general::Real> FastInverse for Matrix4<T>{
@@ -376,21 +376,21 @@ impl<T:alga::general::Real> FastInverse for Matrix4<T>{
         )
     }
 
-    fn fast_affine_inverse(&self) -> Matrix4<T>{
-        let _3x3 = Matrix3::new(
+    fn fast_affine_inverse(&self) -> Option<Matrix4<T>>{
+        Matrix3::new(
             self.m11, self.m12, self.m13,
             self.m21, self.m22, self.m23,
             self.m31, self.m32, self.m33,
-        ).try_inverse().unwrap();
-
-        let pos = vec3(self.m14, self.m24, self.m34);
-        let pos = -_3x3.fast_mul(&pos);
-        Matrix4::new(
-            _3x3.m11, _3x3.m12, _3x3.m13, pos.x,
-            _3x3.m21, _3x3.m22, _3x3.m23, pos.y,
-            _3x3.m31, _3x3.m32, _3x3.m33, pos.z,
-            zero(),   zero(),   zero(),   one()                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                ,
-        )
+        ).try_inverse().map(|_3x3| {
+            let pos = vec3(self.m14, self.m24, self.m34);
+            let pos = -_3x3.fast_mul(&pos);
+            Matrix4::new(
+                _3x3.m11, _3x3.m12, _3x3.m13, pos.x,
+                _3x3.m21, _3x3.m22, _3x3.m23, pos.y,
+                _3x3.m31, _3x3.m32, _3x3.m33, pos.z,
+                zero(),   zero(),   zero(),   one()                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                ,
+            )
+        })
     }
 }
 
