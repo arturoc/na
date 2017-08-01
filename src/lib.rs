@@ -529,11 +529,11 @@ impl<N: BaseNum + alga::general::Real> FloatPnt<N> for Point6<N>{}
 #[macro_export]
 macro_rules! vec2{
     ($x: expr, $y: expr) => ({
-        Vector2::new($x, $y)
+        $crate::Vector2::new($x, $y)
     });
     ($v1: expr) => ({
         use $crate::traits::IntoVec;
-        let v: Vector2<_> = $v1.into_vec();
+        let v: $crate::Vector2<_> = $v1.into_vec();
         v
     });
 }
@@ -541,7 +541,7 @@ macro_rules! vec2{
 #[macro_export]
 macro_rules! vec3{
     ($x: expr, $y: expr, $z: expr) => ({
-        Vector3::new($x, $y, $z)
+        $crate::Vector3::new($x, $y, $z)
     });
     ($v1: expr, $v2: expr) => ({
         use $crate::traits::JoinVec;
@@ -549,7 +549,7 @@ macro_rules! vec3{
     });
     ($v1: expr) => ({
         use $crate::traits::IntoVec;
-        let v: Vector3<_> = $v1.into_vec();
+        let v: $crate::Vector3<_> = $v1.into_vec();
         v
     });
 }
@@ -557,7 +557,7 @@ macro_rules! vec3{
 #[macro_export]
 macro_rules! vec4{
     ($x: expr, $y: expr, $z: expr, $w: expr) => ({
-        Vector4::new($x, $y, $z, $w)
+        $crate::Vector4::new($x, $y, $z, $w)
     });
     ($v1: expr, $v2: expr, $v3: expr) => ({
         use $crate::traits::JoinVec;
@@ -578,11 +578,11 @@ macro_rules! vec4{
 #[macro_export]
 macro_rules! pnt2{
     ($x: expr, $y: expr) => ({
-        Point2::new($x, $y)
+        $crate::Point2::new($x, $y)
     });
     ($v1: expr) => ({
         use $crate::traits::IntoPnt;
-        let v: Point2<_> = $v1.into_pnt();
+        let v: $crate::Point2<_> = $v1.into_pnt();
         v
     });
 }
@@ -590,7 +590,7 @@ macro_rules! pnt2{
 #[macro_export]
 macro_rules! pnt3{
     ($x: expr, $y: expr, $z: expr) => ({
-        Point3::new($x, $y, $z)
+        $crate::Point3::new($x, $y, $z)
     });
     ($v1: expr, $v2: expr) => ({
         use $crate::traits::JoinPnt;
@@ -598,7 +598,7 @@ macro_rules! pnt3{
     });
     ($v1: expr) => ({
         use $crate::traits::IntoPnt;
-        let v: Point3<_> = $v1.into_pnt();
+        let v: $crate::Point3<_> = $v1.into_pnt();
         v
     });
 }
@@ -606,7 +606,7 @@ macro_rules! pnt3{
 #[macro_export]
 macro_rules! pnt4{
     ($x: expr, $y: expr, $z: expr, $w: expr) => ({
-        Point4::new($x, $y, $z, $w)
+        $crate::Point4::new($x, $y, $z, $w)
     });
     ($v1: expr, $v2: expr, $v3: expr) => ({
         use $crate::traits::JoinPnt;
@@ -618,7 +618,7 @@ macro_rules! pnt4{
     });
     ($v1: expr) => ({
         use $crate::traits::IntoPnt;
-        let v: Vector4<_> = $v1.into_pnt();
+        let v: $crate::Vector4<_> = $v1.into_pnt();
         v
     });
 }
