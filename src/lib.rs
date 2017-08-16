@@ -1,8 +1,8 @@
+#![cfg_attr(feature = "unstable", feature(test))]
+
 extern crate nalgebra as na;
 extern crate alga;
-extern crate num;
-extern crate typenum;
-extern crate generic_array;
+extern crate num_traits as num;
 
 pub type VecN<T,D> = na::VectorN<T,D>;
 pub type Vec1<T=f32> = na::Vector1<T>;
@@ -44,11 +44,15 @@ pub type DMat<T=f32> = na::DMatrix<T>;
 pub type UnitQuat<T=f32> = na::UnitQuaternion<T>;
 
 pub use na::*;
+pub use na::storage::{Storage, StorageMut};
 pub use std::mem;
 pub use std::ops::*;
 pub use std::fmt::Debug;
 
 pub mod traits;
+
+#[cfg(feature="unstable")]
+mod tests;
 
 // vec constructors
 #[inline]
@@ -464,7 +468,6 @@ pub trait NumVec<N>: Add<Self, Output = Self> + Sub<Self, Output = Self> +
 pub trait FloatVec<N: alga::general::Real>: NumVec<N> +
                         alga::linear::NormedSpace +
                         Neg<Output = Self> +
-                        Axpy<N> +
                         alga::linear::FiniteDimVectorSpace +
                         alga::linear::FiniteDimInnerSpace {
 }
@@ -505,7 +508,6 @@ pub trait NumPnt<N>: // Sub<Self, Output = NumVec<N>> + //TODO: Output Vec
 /// Trait of vector with components implementing the `BaseFloat` trait.
 pub trait FloatPnt<N: alga::general::Real>: NumPnt<N> +
                         Neg<Output = Self> +
-                        Axpy<N> +
                         alga::linear::AffineSpace +
                         alga::linear::EuclideanSpace {
 }
@@ -660,12 +662,6 @@ macro_rules! swizzles2_impl{
     )
 }
 
-swizzles2_impl!(Vector2, Vector2);
-swizzles2_impl!(Vector3, Vector2);
-swizzles2_impl!(Vector4, Vector2);
-swizzles2_impl!(Vector5, Vector2);
-swizzles2_impl!(Vector6, Vector2);
-
 swizzles2_impl!(Point2, Point2);
 swizzles2_impl!(Point3, Point2);
 swizzles2_impl!(Point4, Point2);
@@ -674,13 +670,12 @@ swizzles2_impl!(Point6, Point2);
 
 
 
-macro_rules! swizzles2_slice_impl{
+macro_rules! swizzles2_storage_impl{
     ($dim: ident, $o: ident) => (
-        impl<'a, T, RStride, CStride, Alloc> Swizzles2<T> for Matrix<T,$dim,U1,SliceStorage<'a,T,$dim,U1,RStride,CStride,Alloc>>
+        impl<'a, T, S> Swizzles2<T> for Matrix<T,$dim,U1,S>
             where T: Scalar,
-                  RStride:Dim,
-                  CStride:Dim,
-                  Alloc: allocator::Allocator<T,$dim,U1> {
+                  S: Storage<T,$dim,U1>
+        {
             type Swizzle2 = $o<T>;
             fn xy(&self) -> $o<T>{
                 $o::new(self[0], self[1])
@@ -690,25 +685,10 @@ macro_rules! swizzles2_slice_impl{
             }
         }
 
-        impl<'a, T, RStride, CStride, Alloc> Swizzles2<T> for Matrix<T,$dim,U1,SliceStorageMut<'a,T,$dim,U1,RStride,CStride,Alloc>>
+        impl<'a, T, S> Swizzles2Mut<T> for Matrix<T,$dim,U1,S>
             where T: Scalar,
-                  RStride:Dim,
-                  CStride:Dim,
-                  Alloc: allocator::Allocator<T,$dim,U1> {
-            type Swizzle2 = $o<T>;
-            fn xy(&self) -> $o<T>{
-                $o::new(self[0], self[1])
-            }
-            fn yx(&self) -> $o<T>{
-                $o::new(self[1], self[0])
-            }
-        }
-
-        impl<'a, T, RStride, CStride, Alloc> Swizzles2Mut<T> for Matrix<T,$dim,U1,SliceStorageMut<'a,T,$dim,U1,RStride,CStride,Alloc>>
-            where T: Scalar,
-                  RStride:Dim,
-                  CStride:Dim,
-                  Alloc: allocator::Allocator<T,$dim,U1> {
+                  S: StorageMut<T,$dim,U1>
+        {
             fn set_xy(&mut self, right: &$o<T>){
                 self[0] = right.x;
                 self[1] = right.y;
@@ -722,11 +702,11 @@ macro_rules! swizzles2_slice_impl{
     )
 }
 
-swizzles2_slice_impl!(U2,Vector2);
-swizzles2_slice_impl!(U3,Vector2);
-swizzles2_slice_impl!(U4,Vector2);
-swizzles2_slice_impl!(U5,Vector2);
-swizzles2_slice_impl!(U6,Vector2);
+swizzles2_storage_impl!(U2,Vector2);
+swizzles2_storage_impl!(U3,Vector2);
+swizzles2_storage_impl!(U4,Vector2);
+swizzles2_storage_impl!(U5,Vector2);
+swizzles2_storage_impl!(U6,Vector2);
 
 pub trait Swizzles3<T: Scalar>: Swizzles2<T>{
     type Swizzle3;
@@ -860,11 +840,6 @@ macro_rules! swizzles3_impl{
     )
 }
 
-swizzles3_impl!(Vector3, Vector3);
-swizzles3_impl!(Vector4, Vector3);
-swizzles3_impl!(Vector5, Vector3);
-swizzles3_impl!(Vector6, Vector3);
-
 swizzles3_impl!(Point3, Point3);
 swizzles3_impl!(Point4, Point3);
 swizzles3_impl!(Point5, Point3);
@@ -874,13 +849,12 @@ swizzles3_impl!(Point6, Point3);
 
 
 
-macro_rules! swizzles3_slice_impl{
+macro_rules! swizzles3_storage_impl{
     ($dim: ident, $o: ident) => (
-        impl<'a, T, RStride, CStride, Alloc> Swizzles3<T> for Matrix<T,$dim,U1,SliceStorage<'a,T,$dim,U1,RStride,CStride,Alloc>>
+        impl<'a, T, S> Swizzles3<T> for Matrix<T,$dim,U1,S>
             where T: Scalar,
-                  RStride:Dim,
-                  CStride:Dim,
-                  Alloc: allocator::Allocator<T,$dim,U1> {
+                  S: Storage<T,$dim,U1>
+        {
             type Swizzle3 = $o<T>;
             fn xyz(&self) -> $o<T>{
                 $o::new(self[0], self[1], self[2])
@@ -923,58 +897,10 @@ macro_rules! swizzles3_slice_impl{
             }
         }
 
-        impl<'a, T, RStride, CStride, Alloc> Swizzles3<T> for Matrix<T,$dim,U1,SliceStorageMut<'a,T,$dim,U1,RStride,CStride,Alloc>>
+        impl<'a, T, S> Swizzles3Mut<T> for Matrix<T,$dim,U1,S>
             where T: Scalar,
-                  RStride:Dim,
-                  CStride:Dim,
-                  Alloc: allocator::Allocator<T,$dim,U1> {
-            type Swizzle3 = $o<T>;
-            fn xyz(&self) -> $o<T>{
-                $o::new(self[0], self[1], self[2])
-            }
-
-            fn xzy(&self) -> $o<T>{
-                $o::new(self[0], self[2], self[1])
-            }
-
-            fn yxz(&self) -> $o<T>{
-                $o::new(self[1], self[0], self[2])
-            }
-
-            fn yzx(&self) -> $o<T>{
-                $o::new(self[1], self[2], self[0])
-            }
-
-            fn zxy(&self) -> $o<T>{
-                $o::new(self[2], self[0], self[1])
-            }
-
-            fn zyx(&self) -> $o<T>{
-                $o::new(self[2], self[1], self[0])
-            }
-
-            fn yz(&self) -> Self::Swizzle2{
-                Self::Swizzle2::new(self[1], self[2])
-            }
-
-            fn xz(&self) -> Self::Swizzle2{
-                Self::Swizzle2::new(self[0], self[2])
-            }
-
-            fn zy(&self) -> Self::Swizzle2{
-                Self::Swizzle2::new(self[2], self[1])
-            }
-
-            fn zx(&self) -> Self::Swizzle2{
-                Self::Swizzle2::new(self[2], self[0])
-            }
-        }
-
-        impl<'a, T, RStride, CStride, Alloc> Swizzles3Mut<T> for Matrix<T,$dim,U1,SliceStorageMut<'a,T,$dim,U1,RStride,CStride,Alloc>>
-            where T: Scalar,
-                  RStride:Dim,
-                  CStride:Dim,
-                  Alloc: allocator::Allocator<T,$dim,U1> {
+                  S: StorageMut<T,$dim,U1>
+        {
                       fn set_xyz(&mut self, right: &$o<T>){
                           self[0] = right.x;
                           self[1] = right.y;
@@ -1034,10 +960,10 @@ macro_rules! swizzles3_slice_impl{
     )
 }
 
-swizzles3_slice_impl!(U3,Vector3);
-swizzles3_slice_impl!(U4,Vector3);
-swizzles3_slice_impl!(U5,Vector3);
-swizzles3_slice_impl!(U6,Vector3);
+swizzles3_storage_impl!(U3,Vector3);
+swizzles3_storage_impl!(U4,Vector3);
+swizzles3_storage_impl!(U5,Vector3);
+swizzles3_storage_impl!(U6,Vector3);
 
 
 
