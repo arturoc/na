@@ -16,19 +16,19 @@ impl<T: ::BaseNum> JoinVec<T,T> for T{
     }
 }
 
-impl<T: ::BaseNum> JoinVec<T,Vector2<T>> for T{
+impl<T: ::BaseNum, S: Storage<T,U2,U1>> JoinVec<T,Vector<T, na::U2, S>> for T{
     type Output = Vector3<T>;
     #[inline]
-    fn join(self, v: Vector2<T>) -> Vector3<T>{
-        Vector3::new(self, v.x, v.y)
+    fn join(self, v: Vector<T, na::U2, S>) -> Vector3<T>{
+        Vector3::new(self, v[0], v[1])
     }
 }
 
-impl<T: ::BaseNum> JoinVec<T,Vector3<T>> for T{
+impl<T: ::BaseNum, S: Storage<T,U3,U1>> JoinVec<T,Vector<T, na::U3, S>> for T{
     type Output = Vector4<T>;
     #[inline]
-    fn join(self, v: Vector3<T>) -> Vector4<T>{
-        Vector4::new(self, v.x, v.y, v.z)
+    fn join(self, v: Vector<T, na::U3, S>) -> Vector4<T>{
+        Vector4::new(self, v[0], v[1], v[2])
     }
 }
 
@@ -58,14 +58,14 @@ impl<'a, T, S> JoinVec<T,T> for Matrix<T,na::U2,na::U1,S>
     }
 }
 
-impl<'a, T, S> JoinVec<T,Vector2<T>> for Matrix<T,na::U2,na::U1,S>
+impl<'a, T, S> JoinVec<T,Vector<T, na::U2, S>> for Vector<T, na::U2, S>
     where T: ::BaseNum,
           S: Storage<T, na::U2, na::U1>,
 {
     type Output = Vector4<T>;
     #[inline]
-    fn join(self, v: Vector2<T>) -> Vector4<T>{
-        Vector4::new(self[0], self[1], v.x, v.y)
+    fn join(self, v: Vector<T, na::U2, S>) -> Vector4<T>{
+        Vector4::new(self[0], self[1], v[0], v[1])
     }
 }
 
@@ -73,7 +73,7 @@ impl<'a, T, S> JoinVec<T,Vector2<T>> for Matrix<T,na::U2,na::U1,S>
 
 
 
-impl<'a, T, S> JoinVec<T,T> for Matrix<T,na::U3,na::U1,S>
+impl<'a, T, S> JoinVec<T,T> for Vector<T,na::U3,S>
     where T: ::BaseNum,
           S: Storage<T,na::U3,na::U1>
 {
@@ -84,25 +84,27 @@ impl<'a, T, S> JoinVec<T,T> for Matrix<T,na::U3,na::U1,S>
     }
 }
 
-impl<'a, T, S> JoinVec<T,Vector2<T>> for Matrix<T,na::U1,na::U1,S>
+impl<'a, T, S1, S2> JoinVec<T,Vector<T,na::U2,S2>> for Vector<T,na::U1,S1>
     where T: ::BaseNum,
-          S: Storage<T,na::U1,na::U1>
+          S1: Storage<T,na::U1,na::U1>,
+          S2: Storage<T,na::U2,na::U1>,
 {
     type Output = Vector3<T>;
     #[inline]
-    fn join(self, v: Vector2<T>) -> Vector3<T>{
-        Vector3::new(self[0], v.x, v.y)
+    fn join(self, v: Vector<T,na::U2,S2>) -> Vector3<T>{
+        Vector3::new(self[0], v[0], v[1])
     }
 }
 
-impl<'a, T, S> JoinVec<T,Vector3<T>> for Matrix<T,na::U1,na::U1,S>
+impl<'a, T, S1, S3> JoinVec<T,Vector<T,na::U3,S3>> for Matrix<T,na::U1,na::U1,S1>
     where T: ::BaseNum,
-          S: Storage<T,na::U1,na::U1>
+          S1: Storage<T,na::U1,na::U1>,
+          S3: Storage<T,na::U3,na::U1>,
 {
     type Output = Vector4<T>;
     #[inline]
-    fn join(self, v: Vector3<T>) -> Vector4<T>{
-        Vector4::new(self[0], v.x, v.y, v.z)
+    fn join(self, v: Vector<T,na::U3,S3>) -> Vector4<T>{
+        Vector4::new(self[0], v[0], v[1], v[2])
     }
 }
 
