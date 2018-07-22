@@ -1,6 +1,6 @@
 [package]
 name = "na"
-version = "0.15.0"
+version = "0.16.0"
 authors = ["arturo castro <arturo@openframeworks.cc>"]
 description = "na is a wrapper around nalgebra to make it easier and mostly less verbose to work with the most used types in vector math for graphics."
 homepage = "http://github.com/arturoc/na"
@@ -8,8 +8,8 @@ repository = "http://github.com/arturoc/na"
 license = "BSD-3-Clause"
 
 [dependencies]
-nalgebra = "0.15"
-alga = "0.6"
+nalgebra = "0.16"
+alga = "0.7"
 num-traits = "0.2"
 
 [features]
