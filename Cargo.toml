@@ -1,6 +1,6 @@
 [package]
 name = "na"
-version = "0.16.4"
+version = "0.16.5"
 authors = ["arturo castro <arturo@openframeworks.cc>"]
 description = "na is a wrapper around nalgebra to make it easier and mostly less verbose to work with the most used types in vector math for graphics."
 homepage = "http://github.com/arturoc/na"

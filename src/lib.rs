@@ -30,6 +30,13 @@ pub type Mat6<T=f32> = na::Matrix6<T>;
 pub type Quat<T=f32> = na::Quaternion<T>;
 pub type UnitQuat<T=f32> = na::UnitQuaternion<T>;
 
+pub type Isometry3<T=f32> = na::Isometry3<T>;
+pub type Isometry2<T=f32> = na::Isometry2<T>;
+pub type Rotation3<T=f32> = na::Rotation3<T>;
+pub type Rotation2<T=f32> = na::Rotation2<T>;
+pub type Translation3<T=f32> = na::Translation3<T>;
+pub type Translation2<T=f32> = na::Translation2<T>;
+
 pub use na::*;
 pub use na::storage::{Storage, StorageMut};
 pub use alga::general::{Identity, Multiplicative, Additive};
