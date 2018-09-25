@@ -26,28 +26,15 @@ pub type Mat4<T=f32> = na::Matrix4<T>;
 pub type Mat5<T=f32> = na::Matrix5<T>;
 pub type Mat6<T=f32> = na::Matrix6<T>;
 
-pub type Ortho3<T=f32> = na::Orthographic3<T>;
-pub type Persp3<T=f32> = na::Perspective3<T>;
-
-pub type Rot2<T=f32> = na::Rotation2<T>;
-pub type Rot3<T=f32> = na::Rotation3<T>;
 
 pub type Quat<T=f32> = na::Quaternion<T>;
-
-pub type Iso2<T=f32> = na::Isometry2<T>;
-pub type Iso3<T=f32> = na::Isometry3<T>;
-
-pub type DVec<T=f32> = na::DVector<T>;
-
-pub type DMat<T=f32> = na::DMatrix<T>;
-
 pub type UnitQuat<T=f32> = na::UnitQuaternion<T>;
 
 pub use na::*;
 pub use na::storage::{Storage, StorageMut};
-pub use std::mem;
-pub use std::ops::*;
-pub use std::fmt::Debug;
+pub use alga::general::{Identity, Multiplicative, Additive};
+use std::mem;
+use std::ops::*;
 
 pub mod traits;
 
@@ -670,43 +657,43 @@ swizzles2_impl!(Point6, Point2);
 
 
 
-macro_rules! swizzles2_storage_impl{
-    ($dim: ident, $o: ident) => (
-        impl<'a, T, S> Swizzles2<T> for Matrix<T,$dim,U1,S>
-            where T: Scalar,
-                  S: Storage<T,$dim,U1>
-        {
-            type Swizzle2 = $o<T>;
-            fn xy(&self) -> $o<T>{
-                $o::new(self[0], self[1])
-            }
-            fn yx(&self) -> $o<T>{
-                $o::new(self[1], self[0])
-            }
-        }
+// macro_rules! swizzles2_storage_impl{
+//     ($dim: ident, $o: ident) => (
+//         impl<'a, T, S> Swizzles2<T> for Matrix<T,$dim,U1,S>
+//             where T: Scalar,
+//                   S: Storage<T,$dim,U1>
+//         {
+//             type Swizzle2 = $o<T>;
+//             fn xy(&self) -> $o<T>{
+//                 $o::new(self[0], self[1])
+//             }
+//             fn yx(&self) -> $o<T>{
+//                 $o::new(self[1], self[0])
+//             }
+//         }
 
-        impl<'a, T, S> Swizzles2Mut<T> for Matrix<T,$dim,U1,S>
-            where T: Scalar,
-                  S: StorageMut<T,$dim,U1>
-        {
-            fn set_xy(&mut self, right: &$o<T>){
-                self[0] = right.x;
-                self[1] = right.y;
-            }
+//         impl<'a, T, S> Swizzles2Mut<T> for Matrix<T,$dim,U1,S>
+//             where T: Scalar,
+//                   S: StorageMut<T,$dim,U1>
+//         {
+//             fn set_xy(&mut self, right: &$o<T>){
+//                 self[0] = right.x;
+//                 self[1] = right.y;
+//             }
 
-            fn set_yx(&mut self, right: &$o<T>){
-                self[0] = right.x;
-                self[1] = right.y;
-            }
-        }
-    )
-}
+//             fn set_yx(&mut self, right: &$o<T>){
+//                 self[0] = right.x;
+//                 self[1] = right.y;
+//             }
+//         }
+//     )
+// }
 
-swizzles2_storage_impl!(U2,Vector2);
-swizzles2_storage_impl!(U3,Vector2);
-swizzles2_storage_impl!(U4,Vector2);
-swizzles2_storage_impl!(U5,Vector2);
-swizzles2_storage_impl!(U6,Vector2);
+// swizzles2_storage_impl!(U2,Vector2);
+// swizzles2_storage_impl!(U3,Vector2);
+// swizzles2_storage_impl!(U4,Vector2);
+// swizzles2_storage_impl!(U5,Vector2);
+// swizzles2_storage_impl!(U6,Vector2);
 
 pub trait Swizzles3<T: Scalar>: Swizzles2<T>{
     type Swizzle3;
@@ -849,121 +836,121 @@ swizzles3_impl!(Point6, Point3);
 
 
 
-macro_rules! swizzles3_storage_impl{
-    ($dim: ident, $o: ident) => (
-        impl<'a, T, S> Swizzles3<T> for Matrix<T,$dim,U1,S>
-            where T: Scalar,
-                  S: Storage<T,$dim,U1>
-        {
-            type Swizzle3 = $o<T>;
-            fn xyz(&self) -> $o<T>{
-                $o::new(self[0], self[1], self[2])
-            }
+// macro_rules! swizzles3_storage_impl{
+//     ($dim: ident, $o: ident) => (
+//         impl<'a, T, S> Swizzles3<T> for Matrix<T,$dim,U1,S>
+//             where T: Scalar,
+//                   S: Storage<T,$dim,U1>
+//         {
+//             type Swizzle3 = $o<T>;
+//             fn xyz(&self) -> $o<T>{
+//                 $o::new(self[0], self[1], self[2])
+//             }
 
-            fn xzy(&self) -> $o<T>{
-                $o::new(self[0], self[2], self[1])
-            }
+//             fn xzy(&self) -> $o<T>{
+//                 $o::new(self[0], self[2], self[1])
+//             }
 
-            fn yxz(&self) -> $o<T>{
-                $o::new(self[1], self[0], self[2])
-            }
+//             fn yxz(&self) -> $o<T>{
+//                 $o::new(self[1], self[0], self[2])
+//             }
 
-            fn yzx(&self) -> $o<T>{
-                $o::new(self[1], self[2], self[0])
-            }
+//             fn yzx(&self) -> $o<T>{
+//                 $o::new(self[1], self[2], self[0])
+//             }
 
-            fn zxy(&self) -> $o<T>{
-                $o::new(self[2], self[0], self[1])
-            }
+//             fn zxy(&self) -> $o<T>{
+//                 $o::new(self[2], self[0], self[1])
+//             }
 
-            fn zyx(&self) -> $o<T>{
-                $o::new(self[2], self[1], self[0])
-            }
+//             fn zyx(&self) -> $o<T>{
+//                 $o::new(self[2], self[1], self[0])
+//             }
 
-            fn yz(&self) -> Self::Swizzle2{
-                Self::Swizzle2::new(self[1], self[2])
-            }
+//             fn yz(&self) -> Self::Swizzle2{
+//                 Self::Swizzle2::new(self[1], self[2])
+//             }
 
-            fn xz(&self) -> Self::Swizzle2{
-                Self::Swizzle2::new(self[0], self[2])
-            }
+//             fn xz(&self) -> Self::Swizzle2{
+//                 Self::Swizzle2::new(self[0], self[2])
+//             }
 
-            fn zy(&self) -> Self::Swizzle2{
-                Self::Swizzle2::new(self[2], self[1])
-            }
+//             fn zy(&self) -> Self::Swizzle2{
+//                 Self::Swizzle2::new(self[2], self[1])
+//             }
 
-            fn zx(&self) -> Self::Swizzle2{
-                Self::Swizzle2::new(self[2], self[0])
-            }
-        }
+//             fn zx(&self) -> Self::Swizzle2{
+//                 Self::Swizzle2::new(self[2], self[0])
+//             }
+//         }
 
-        impl<'a, T, S> Swizzles3Mut<T> for Matrix<T,$dim,U1,S>
-            where T: Scalar,
-                  S: StorageMut<T,$dim,U1>
-        {
-                      fn set_xyz(&mut self, right: &$o<T>){
-                          self[0] = right.x;
-                          self[1] = right.y;
-                          self[2] = right.z;
-                      }
+//         impl<'a, T, S> Swizzles3Mut<T> for Matrix<T,$dim,U1,S>
+//             where T: Scalar,
+//                   S: StorageMut<T,$dim,U1>
+//         {
+//                       fn set_xyz(&mut self, right: &$o<T>){
+//                           self[0] = right.x;
+//                           self[1] = right.y;
+//                           self[2] = right.z;
+//                       }
 
-                      fn set_xzy(&mut self, right: &$o<T>){
-                          self[0] = right.x;
-                          self[2] = right.y;
-                          self[1] = right.z;
-                      }
+//                       fn set_xzy(&mut self, right: &$o<T>){
+//                           self[0] = right.x;
+//                           self[2] = right.y;
+//                           self[1] = right.z;
+//                       }
 
-                      fn set_yxz(&mut self, right: &$o<T>){
-                          self[1] = right.x;
-                          self[0] = right.y;
-                          self[2] = right.z;
-                      }
+//                       fn set_yxz(&mut self, right: &$o<T>){
+//                           self[1] = right.x;
+//                           self[0] = right.y;
+//                           self[2] = right.z;
+//                       }
 
-                      fn set_yzx(&mut self, right: &$o<T>){
-                          self[1] = right.x;
-                          self[2] = right.y;
-                          self[0] = right.z;
-                      }
+//                       fn set_yzx(&mut self, right: &$o<T>){
+//                           self[1] = right.x;
+//                           self[2] = right.y;
+//                           self[0] = right.z;
+//                       }
 
-                      fn set_zxy(&mut self, right: &$o<T>){
-                          self[2] = right.x;
-                          self[0] = right.y;
-                          self[1] = right.z;
-                      }
+//                       fn set_zxy(&mut self, right: &$o<T>){
+//                           self[2] = right.x;
+//                           self[0] = right.y;
+//                           self[1] = right.z;
+//                       }
 
-                      fn set_zyx(&mut self, right: &$o<T>){
-                          self[2] = right.x;
-                          self[1] = right.y;
-                          self[0] = right.z;
-                      }
+//                       fn set_zyx(&mut self, right: &$o<T>){
+//                           self[2] = right.x;
+//                           self[1] = right.y;
+//                           self[0] = right.z;
+//                       }
 
-                      fn set_yz(&mut self, right: &Self::Swizzle2){
-                          self[1] = right.x;
-                          self[2] = right.y;
-                      }
+//                       fn set_yz(&mut self, right: &Self::Swizzle2){
+//                           self[1] = right.x;
+//                           self[2] = right.y;
+//                       }
 
-                      fn set_xz(&mut self, right: &Self::Swizzle2){
-                          self[0] = right.x;
-                          self[2] = right.y;
-                      }
+//                       fn set_xz(&mut self, right: &Self::Swizzle2){
+//                           self[0] = right.x;
+//                           self[2] = right.y;
+//                       }
 
-                      fn set_zy(&mut self, right: &Self::Swizzle2){
-                          self[2] = right.x;
-                          self[1] = right.y;
-                      }
+//                       fn set_zy(&mut self, right: &Self::Swizzle2){
+//                           self[2] = right.x;
+//                           self[1] = right.y;
+//                       }
 
-                      fn set_zx(&mut self, right: &Self::Swizzle2){
-                          self[2] = right.x;
-                          self[0] = right.y;
-                      }
-        }
-    )
-}
+//                       fn set_zx(&mut self, right: &Self::Swizzle2){
+//                           self[2] = right.x;
+//                           self[0] = right.y;
+//                       }
+//         }
+//     )
+// }
 
-swizzles3_storage_impl!(U3,Vector3);
-swizzles3_storage_impl!(U4,Vector3);
-swizzles3_storage_impl!(U5,Vector3);
-swizzles3_storage_impl!(U6,Vector3);
+// swizzles3_storage_impl!(U3,Vector3);
+// swizzles3_storage_impl!(U4,Vector3);
+// swizzles3_storage_impl!(U5,Vector3);
+// swizzles3_storage_impl!(U6,Vector3);
 
 
 
@@ -1208,9 +1195,9 @@ macro_rules! swizzles4_impl{
     )
 }
 
-swizzles4_impl!(Vector4, Vector4);
-swizzles4_impl!(Vector5, Vector4);
-swizzles4_impl!(Vector6, Vector4);
+// swizzles4_impl!(Vector4, Vector4);
+// swizzles4_impl!(Vector5, Vector4);
+// swizzles4_impl!(Vector6, Vector4);
 
 swizzles4_impl!(Point4, Point4);
 swizzles4_impl!(Point5, Point4);
