@@ -1,6 +1,6 @@
 [package]
 name = "na"
-version = "0.16.5"
+version = "0.16.6"
 authors = ["arturo castro <arturo@openframeworks.cc>"]
 description = "na is a wrapper around nalgebra to make it easier and mostly less verbose to work with the most used types in vector math for graphics."
 homepage = "http://github.com/arturoc/na"
@@ -14,3 +14,4 @@ num-traits = "0.2"
 
 [features]
 unstable=[]
+serde-serialize = ["nalgebra/serde-serialize"]
