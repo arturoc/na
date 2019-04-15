@@ -193,10 +193,23 @@ impl<T:alga::general::Real> FastDot<T> for [T;3]{
     }
 }
 
-impl<T:alga::general::Real> FastDot<T> for [T;4]{
+impl FastDot<f32> for [f32;4]{
     #[inline]
-    fn fast_dot(&self, right: &[T;4]) -> T{
-        self[0] * right[0] + self[1] * right[1] + self[2] * right[2] + self[3] * right[3]
+    fn fast_dot(&self, right: &[f32;4]) -> f32 {
+        use std::arch::x86_64::*;
+        unsafe{
+            let a = _mm_set_ps(self[3], self[2], self[1], self[0]);
+            let b = _mm_set_ps(right[3], right[2], right[1], right[0]);
+
+            // let p = _mm_mul_ps(a, b);
+            // let sum1 = _mm_hadd_ps(p, p);
+            // let sum2 = _mm_hadd_ps(sum1, sum1);
+            // *(&sum2 as *const _ as *const _)
+
+            let r = _mm_dp_ps(a, b, 0xFF);
+            *(&r as *const _ as *const _)
+        }
+        // self[0] * right[0] + self[1] * right[1] + self[2] * right[2] + self[3] * right[3]
     }
 }
 
@@ -228,12 +241,64 @@ impl<T:alga::general::Real> FastDot<T> for Vector3<T>{
     }
 }
 
-impl<T:alga::general::Real> FastDot<T> for Vector4<T>{
+// impl<T:alga::general::Real> FastDot<T> for Vector4<T>{
+//     #[inline]
+//     fn fast_dot(&self, right: &Vector4<T>) -> T{
+//         self.x * right.x + self.y * right.y + self.z * right.z + self.w * right.w
+//     }
+// }
+
+impl FastDot<f32> for Vector4<f32>{
     #[inline]
-    fn fast_dot(&self, right: &Vector4<T>) -> T{
+    fn fast_dot(&self, right: &Vector4<f32>) -> f32{
+        use std::arch::x86_64::*;
+        unsafe{
+            let a = _mm_set_ps(self.w, self.z, self.y, self.x);
+            let b = _mm_set_ps(right.w, right.z, right.y, right.x);
+
+            let r = _mm_dp_ps(a, b, 0xFF);
+            *(&r as *const _ as *const _)
+
+            // let p = _mm_mul_ps(a, b);
+            // let sum1 = _mm_hadd_ps(p, p);
+            // let sum2 = _mm_hadd_ps(sum1, sum1);
+            // *(&sum2 as *const _ as *const _)
+        }
+
+
+        // self.x * right.x + self.y * right.y + self.z * right.z + self.w * right.w
+    }
+}
+
+impl<S: Storage<f32, na::U1, na::U4>> FastDot<f32> for na::Matrix<f32, na::U1, na::U4, S> {
+    #[inline]
+    fn fast_dot(&self, right: &Self) -> f32{
+        use std::arch::x86_64::*;
+        unsafe{
+            let a = _mm_set_ps(self[3], self[2], self[1], self[0]);
+            let b = _mm_set_ps(right[3], right[2], right[1], right[0]);
+
+            let r = _mm_dp_ps(a, b, 0xFF);
+            *(&r as *const _ as *const _)
+
+            // let p = _mm_mul_ps(a, b);
+            // let sum1 = _mm_hadd_ps(p, p);
+            // let sum2 = _mm_hadd_ps(sum1, sum1);
+            // *(&sum2 as *const _ as *const _)
+        }
+
+
+        // self.x * right.x + self.y * right.y + self.z * right.z + self.w * right.w
+    }
+}
+
+impl FastDot<f64> for Vector4<f64>{
+    #[inline]
+    fn fast_dot(&self, right: &Vector4<f64>) -> f64{
         self.x * right.x + self.y * right.y + self.z * right.z + self.w * right.w
     }
 }
+
 
 impl<T:alga::general::Real> FastDot<T> for Vector5<T>{
     #[inline]
@@ -316,10 +381,29 @@ impl<T:alga::general::Real> FastMul<Vector3<T>> for Matrix3<T>{
     }
 }
 
-impl<T:alga::general::Real> FastMul<Matrix4<T>> for Matrix4<T>{
-    type Output = Matrix4<T>;
+
+#[inline]
+fn fast_dot2(a0: &[f32;4], b0: &[f32;4], a1: &[f32;4], b1: &[f32;4]) -> (f32, f32){
+    use std::arch::x86_64::*;
+    unsafe{
+        let a = _mm256_set_ps(
+            a1[3], a1[2], a1[1], a1[0],
+            a0[3], a0[2], a0[1], a0[0]);
+        let b = _mm256_set_ps(
+            b1[3], b1[2], b1[1], b1[0],
+            b0[3], b0[2], b0[1], b0[0]);
+
+        let r = _mm256_dp_ps(a, b, 0xFF);
+        let r: [f32;8] = *(&r as *const _ as *const _);
+        (r[0], r[4])
+    }
+}
+
+impl FastMul<Matrix4<f32>> for Matrix4<f32>
+{
+    type Output = Matrix4<f32>;
     #[inline]
-    fn fast_mul(&self, right: &Matrix4<T>) -> Matrix4<T>{
+    fn fast_mul(&self, right: &Matrix4<f32>) -> Matrix4<f32>{
         let row0 = [self.m11, self.m12, self.m13, self.m14];
         let row1 = [self.m21, self.m22, self.m23, self.m24];
         let row2 = [self.m31, self.m32, self.m33, self.m34];
@@ -328,27 +412,53 @@ impl<T:alga::general::Real> FastMul<Matrix4<T>> for Matrix4<T>{
         let col1 = [right.m12, right.m22, right.m32, right.m42];
         let col2 = [right.m13, right.m23, right.m33, right.m43];
         let col3 = [right.m14, right.m24, right.m34, right.m44];
+        let (m11, m12) = fast_dot2(&row0, &col0, &row0, &col1);
+        let (m13, m14) = fast_dot2(&row0, &col2, &row0, &col3);
+
+        let (m21, m22) = fast_dot2(&row1, &col0, &row1, &col1);
+        let (m23, m24) = fast_dot2(&row1, &col2, &row1, &col3);
+
+        let (m31, m32) = fast_dot2(&row2, &col0, &row2, &col1);
+        let (m33, m34) = fast_dot2(&row2, &col2, &row2, &col3);
+
+        let (m41, m42) = fast_dot2(&row3, &col0, &row3, &col1);
+        let (m43, m44) = fast_dot2(&row3, &col2, &row3, &col3);
         Matrix4::new(
-            row0.fast_dot(&col0), row0.fast_dot(&col1), row0.fast_dot(&col2), row0.fast_dot(&col3),
-            row1.fast_dot(&col0), row1.fast_dot(&col1), row1.fast_dot(&col2), row1.fast_dot(&col3),
-            row2.fast_dot(&col0), row2.fast_dot(&col1), row2.fast_dot(&col2), row2.fast_dot(&col3),
-            row3.fast_dot(&col0), row3.fast_dot(&col1), row3.fast_dot(&col2), row3.fast_dot(&col3),
+            m11, m12, m13, m14,
+            m21, m22, m23, m24,
+            m31, m32, m33, m34,
+            m41, m42, m43, m44,
         )
+
+        // Matrix4::new(
+        //     row0.fast_dot(&col0), row0.fast_dot(&col1), row0.fast_dot(&col2), row0.fast_dot(&col3),
+        //     row1.fast_dot(&col0), row1.fast_dot(&col1), row1.fast_dot(&col2), row1.fast_dot(&col3),
+        //     row2.fast_dot(&col0), row2.fast_dot(&col1), row2.fast_dot(&col2), row2.fast_dot(&col3),
+        //     row3.fast_dot(&col0), row3.fast_dot(&col1), row3.fast_dot(&col2), row3.fast_dot(&col3),
+        // )
     }
 }
 
-impl<T:alga::general::Real> FastMul<Vector4<T>> for Matrix4<T>{
-    type Output = Vector4<T>;
+impl FastMul<Vector4<f32>> for Matrix4<f32>{
+    type Output = Vector4<f32>;
     #[inline]
-    fn fast_mul(&self, right: &Vector4<T>) -> Vector4<T>{
+    fn fast_mul(&self, right: &Vector4<f32>) -> Vector4<f32>{
+        // let row0 = self.row(0);
+        // let row1 = self.row(1);
+        // let row2 = self.row(2);
+        // let row3 = self.row(3);
+        // let right = unsafe{mem::transmute(right)};
         let row0 = [self.m11, self.m12, self.m13, self.m14];
         let row1 = [self.m21, self.m22, self.m23, self.m24];
         let row2 = [self.m31, self.m32, self.m33, self.m34];
         let row3 = [self.m41, self.m42, self.m43, self.m44];
         let right = right.as_ref();
-        Vector4::new(
-            row0.fast_dot(right), row1.fast_dot(right), row2.fast_dot(right), row3.fast_dot(right)
-        )
+        let (v0, v1) = fast_dot2(&row0, right, &row1, right);
+        let (v2, v3) = fast_dot2(&row2, right, &row3, right);
+        Vector4::new(v0, v1, v2, v3)
+        // Vector4::new(
+        //     row0.fast_dot(right), row1.fast_dot(right), row2.fast_dot(right), row3.fast_dot(right)
+        // )
     }
 }
 
