@@ -117,28 +117,28 @@ pub trait AsVec<T>{
 
 macro_rules! vec_to_pnt_impl{
     ($v: ident, $p: ident) => (
-        impl<T: alga::general::Real> ToPnt<$p<T>> for $v<T>{
+        impl<T: alga::general::RealField> ToPnt<$p<T>> for $v<T>{
             #[inline]
             fn to_pnt(self) -> $p<T>{
-                $p::from_coordinates(self)
+                $p::from(self)
             }
         }
 
-        impl<T: alga::general::Real> AsPnt<$p<T>> for $v<T>{
+        impl<T: alga::general::RealField> AsPnt<$p<T>> for $v<T>{
             #[inline]
             fn as_pnt(&self) -> &$p<T>{
                 unsafe{ mem::transmute(self) }
             }
         }
 
-        impl<T: alga::general::Real> ToVec<$v<T>> for $p<T>{
+        impl<T: alga::general::RealField> ToVec<$v<T>> for $p<T>{
             #[inline]
             fn to_vec(self) -> $v<T>{
                 self.coords
             }
         }
 
-        impl<T: alga::general::Real> AsVec<$v<T>> for $p<T>{
+        impl<T: alga::general::RealField> AsVec<$v<T>> for $p<T>{
             #[inline]
             fn as_vec(&self) -> &$v<T>{
                 &self.coords
@@ -163,13 +163,13 @@ pub trait AsMat<T>{
 }
 
 
-impl<T: alga::general::Real> ToMat<Matrix4<T>> for Orthographic3<T>{
+impl<T: alga::general::RealField> ToMat<Matrix4<T>> for Orthographic3<T>{
     fn to_mat(self) -> Matrix4<T>{
         self.to_homogeneous()
     }
 }
 
-impl<T: alga::general::Real> AsMat<Matrix4<T>> for Orthographic3<T>{
+impl<T: alga::general::RealField> AsMat<Matrix4<T>> for Orthographic3<T>{
     fn as_mat(&self) -> &Matrix4<T>{
         self.as_matrix()
     }
@@ -179,14 +179,14 @@ pub trait FastDot<T>{
     fn fast_dot(&self, right: &Self) -> T;
 }
 
-impl<T:alga::general::Real> FastDot<T> for [T;2]{
+impl<T:alga::general::RealField> FastDot<T> for [T;2]{
     #[inline]
     fn fast_dot(&self, right: &[T;2]) -> T{
         self[0] * right[0] + self[1] * right[1]
     }
 }
 
-impl<T:alga::general::Real> FastDot<T> for [T;3]{
+impl<T:alga::general::RealField> FastDot<T> for [T;3]{
     #[inline]
     fn fast_dot(&self, right: &[T;3]) -> T{
         self[0] * right[0] + self[1] * right[1] + self[2] * right[2]
@@ -213,35 +213,35 @@ impl FastDot<f32> for [f32;4]{
     }
 }
 
-impl<T:alga::general::Real> FastDot<T> for [T;5]{
+impl<T:alga::general::RealField> FastDot<T> for [T;5]{
     #[inline]
     fn fast_dot(&self, right: &[T;5]) -> T{
         self[0] * right[0] + self[1] * right[1] + self[2] * right[2] + self[3] * right[3] + self[4] * right[4]
     }
 }
 
-impl<T:alga::general::Real> FastDot<T> for [T;6]{
+impl<T:alga::general::RealField> FastDot<T> for [T;6]{
     #[inline]
     fn fast_dot(&self, right: &[T;6]) -> T{
         self[0] * right[0] + self[1] * right[1] + self[2] * right[2] + self[3] * right[3] + self[4] * right[4] + self[5] * right[5]
     }
 }
 
-impl<T:alga::general::Real> FastDot<T> for Vector2<T>{
+impl<T:alga::general::RealField> FastDot<T> for Vector2<T>{
     #[inline]
     fn fast_dot(&self, right: &Vector2<T>) -> T{
         self.x * right.x + self.y * right.y
     }
 }
 
-impl<T:alga::general::Real> FastDot<T> for Vector3<T>{
+impl<T:alga::general::RealField> FastDot<T> for Vector3<T>{
     #[inline]
     fn fast_dot(&self, right: &Vector3<T>) -> T{
         self.x * right.x + self.y * right.y + self.z * right.z
     }
 }
 
-// impl<T:alga::general::Real> FastDot<T> for Vector4<T>{
+// impl<T:alga::general::RealField> FastDot<T> for Vector4<T>{
 //     #[inline]
 //     fn fast_dot(&self, right: &Vector4<T>) -> T{
 //         self.x * right.x + self.y * right.y + self.z * right.z + self.w * right.w
@@ -300,14 +300,14 @@ impl FastDot<f64> for Vector4<f64>{
 }
 
 
-impl<T:alga::general::Real> FastDot<T> for Vector5<T>{
+impl<T:alga::general::RealField> FastDot<T> for Vector5<T>{
     #[inline]
     fn fast_dot(&self, right: &Vector5<T>) -> T{
         self.x * right.x + self.y * right.y + self.z * right.z + self.w * right.w + self.a * right.a
     }
 }
 
-impl<T:alga::general::Real> FastDot<T> for Vector6<T>{
+impl<T:alga::general::RealField> FastDot<T> for Vector6<T>{
     #[inline]
     fn fast_dot(&self, right: &Vector6<T>) -> T{
         self.x * right.x + self.y * right.y + self.z * right.z + self.w * right.w + self.a * right.a + self.b * right.b
@@ -321,7 +321,7 @@ pub trait FastMul<T>{
     fn fast_mul(&self, right: &T) -> Self::Output;
 }
 
-impl<T:alga::general::Real> FastMul<Matrix2<T>> for Matrix2<T>{
+impl<T:alga::general::RealField> FastMul<Matrix2<T>> for Matrix2<T>{
     type Output = Matrix2<T>;
     #[inline]
     fn fast_mul(&self, right: &Matrix2<T>) -> Matrix2<T>{
@@ -336,7 +336,7 @@ impl<T:alga::general::Real> FastMul<Matrix2<T>> for Matrix2<T>{
     }
 }
 
-impl<T:alga::general::Real> FastMul<Vector2<T>> for Matrix2<T>{
+impl<T:alga::general::RealField> FastMul<Vector2<T>> for Matrix2<T>{
     type Output = Vector2<T>;
     #[inline]
     fn fast_mul(&self, right: &Vector2<T>) -> Vector2<T>{
@@ -349,7 +349,7 @@ impl<T:alga::general::Real> FastMul<Vector2<T>> for Matrix2<T>{
     }
 }
 
-impl<T:alga::general::Real> FastMul<Matrix3<T>> for Matrix3<T>{
+impl<T:alga::general::RealField> FastMul<Matrix3<T>> for Matrix3<T>{
     type Output = Matrix3<T>;
     #[inline]
     fn fast_mul(&self, right: &Matrix3<T>) -> Matrix3<T>{
@@ -367,7 +367,7 @@ impl<T:alga::general::Real> FastMul<Matrix3<T>> for Matrix3<T>{
     }
 }
 
-impl<T:alga::general::Real> FastMul<Vector3<T>> for Matrix3<T>{
+impl<T:alga::general::RealField> FastMul<Vector3<T>> for Matrix3<T>{
     type Output = Vector3<T>;
     #[inline]
     fn fast_mul(&self, right: &Vector3<T>) -> Vector3<T>{
@@ -467,7 +467,7 @@ pub trait FastInverse{
     fn fast_affine_inverse(&self) -> Option<Self> where Self: Sized;
 }
 
-impl<T:alga::general::Real> FastInverse for Matrix4<T>{
+impl<T:alga::general::RealField> FastInverse for Matrix4<T>{
     fn fast_orthonormal_inverse(&self) -> Matrix4<T>{
         let _3x3 = Matrix3::new(
             self.m11, self.m21, self.m31,
@@ -569,7 +569,7 @@ pub trait NumVec<N>: Add<Self, Output = Self> + Sub<Self, Output = Self> +
 }
 
 /// Trait of vector with components implementing the `BaseFloat` trait.
-pub trait FloatVec<N: alga::general::Real>: NumVec<N> +
+pub trait FloatVec<N: alga::general::RealField>: NumVec<N> +
                         alga::linear::NormedSpace +
                         Neg<Output = Self> +
                         alga::linear::FiniteDimVectorSpace +
@@ -584,12 +584,12 @@ impl<N: BaseNum> NumVec<N> for Vector4<N>{}
 impl<N: BaseNum> NumVec<N> for Vector5<N>{}
 impl<N: BaseNum> NumVec<N> for Vector6<N>{}
 
-impl<N: BaseNum + alga::general::Real> FloatVec<N> for Vector1<N>{}
-impl<N: BaseNum + alga::general::Real> FloatVec<N> for Vector2<N>{}
-impl<N: BaseNum + alga::general::Real> FloatVec<N> for Vector3<N>{}
-impl<N: BaseNum + alga::general::Real> FloatVec<N> for Vector4<N>{}
-impl<N: BaseNum + alga::general::Real> FloatVec<N> for Vector5<N>{}
-impl<N: BaseNum + alga::general::Real> FloatVec<N> for Vector6<N>{}
+impl<N: BaseNum + alga::general::RealField> FloatVec<N> for Vector1<N>{}
+impl<N: BaseNum + alga::general::RealField> FloatVec<N> for Vector2<N>{}
+impl<N: BaseNum + alga::general::RealField> FloatVec<N> for Vector3<N>{}
+impl<N: BaseNum + alga::general::RealField> FloatVec<N> for Vector4<N>{}
+impl<N: BaseNum + alga::general::RealField> FloatVec<N> for Vector5<N>{}
+impl<N: BaseNum + alga::general::RealField> FloatVec<N> for Vector6<N>{}
 
 /*
  * Vector related traits.
@@ -610,7 +610,7 @@ pub trait NumPnt<N>: // Sub<Self, Output = NumVec<N>> + //TODO: Output Vec
 }
 
 /// Trait of vector with components implementing the `BaseFloat` trait.
-pub trait FloatPnt<N: alga::general::Real>: NumPnt<N> +
+pub trait FloatPnt<N: alga::general::RealField>: NumPnt<N> +
                         Neg<Output = Self> +
                         alga::linear::AffineSpace +
                         alga::linear::EuclideanSpace {
@@ -624,12 +624,12 @@ impl<N: BaseNum> NumPnt<N> for Point4<N>{}
 impl<N: BaseNum> NumPnt<N> for Point5<N>{}
 impl<N: BaseNum> NumPnt<N> for Point6<N>{}
 
-impl<N: BaseNum + alga::general::Real> FloatPnt<N> for Point1<N>{}
-impl<N: BaseNum + alga::general::Real> FloatPnt<N> for Point2<N>{}
-impl<N: BaseNum + alga::general::Real> FloatPnt<N> for Point3<N>{}
-impl<N: BaseNum + alga::general::Real> FloatPnt<N> for Point4<N>{}
-impl<N: BaseNum + alga::general::Real> FloatPnt<N> for Point5<N>{}
-impl<N: BaseNum + alga::general::Real> FloatPnt<N> for Point6<N>{}
+impl<N: BaseNum + alga::general::RealField> FloatPnt<N> for Point1<N>{}
+impl<N: BaseNum + alga::general::RealField> FloatPnt<N> for Point2<N>{}
+impl<N: BaseNum + alga::general::RealField> FloatPnt<N> for Point3<N>{}
+impl<N: BaseNum + alga::general::RealField> FloatPnt<N> for Point4<N>{}
+impl<N: BaseNum + alga::general::RealField> FloatPnt<N> for Point5<N>{}
+impl<N: BaseNum + alga::general::RealField> FloatPnt<N> for Point6<N>{}
 
 
 #[macro_export]
