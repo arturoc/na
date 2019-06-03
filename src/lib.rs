@@ -195,6 +195,7 @@ impl<T:alga::general::RealField> FastDot<T> for [T;3]{
 
 impl FastDot<f32> for [f32;4]{
     #[inline]
+    #[cfg(target_arch = "x86_64")]
     fn fast_dot(&self, right: &[f32;4]) -> f32 {
         use std::arch::x86_64::*;
         unsafe{
@@ -209,7 +210,12 @@ impl FastDot<f32> for [f32;4]{
             let r = _mm_dp_ps(a, b, 0xFF);
             *(&r as *const _ as *const _)
         }
-        // self[0] * right[0] + self[1] * right[1] + self[2] * right[2] + self[3] * right[3]
+    }
+
+    #[inline]
+    #[cfg(not(target_arch = "x86_64"))]
+    fn fast_dot(&self, right: &[f32;4]) -> f32 {
+        self[0] * right[0] + self[1] * right[1] + self[2] * right[2] + self[3] * right[3]
     }
 }
 
@@ -250,6 +256,7 @@ impl<T:alga::general::RealField> FastDot<T> for Vector3<T>{
 
 impl FastDot<f32> for Vector4<f32>{
     #[inline]
+    #[cfg(target_arch = "x86_64")]
     fn fast_dot(&self, right: &Vector4<f32>) -> f32{
         use std::arch::x86_64::*;
         unsafe{
@@ -258,20 +265,19 @@ impl FastDot<f32> for Vector4<f32>{
 
             let r = _mm_dp_ps(a, b, 0xFF);
             *(&r as *const _ as *const _)
-
-            // let p = _mm_mul_ps(a, b);
-            // let sum1 = _mm_hadd_ps(p, p);
-            // let sum2 = _mm_hadd_ps(sum1, sum1);
-            // *(&sum2 as *const _ as *const _)
         }
+    }
 
-
-        // self.x * right.x + self.y * right.y + self.z * right.z + self.w * right.w
+    #[inline]
+    #[cfg(not(target_arch = "x86_64"))]
+    fn fast_dot(&self, right: &Vector4<f32>) -> f32{
+        self.x * right.x + self.y * right.y + self.z * right.z + self.w * right.w
     }
 }
 
 impl<S: Storage<f32, na::U1, na::U4>> FastDot<f32> for na::Matrix<f32, na::U1, na::U4, S> {
     #[inline]
+    #[cfg(target_arch = "x86_64")]
     fn fast_dot(&self, right: &Self) -> f32{
         use std::arch::x86_64::*;
         unsafe{
@@ -286,9 +292,12 @@ impl<S: Storage<f32, na::U1, na::U4>> FastDot<f32> for na::Matrix<f32, na::U1, n
             // let sum2 = _mm_hadd_ps(sum1, sum1);
             // *(&sum2 as *const _ as *const _)
         }
+    }
 
-
-        // self.x * right.x + self.y * right.y + self.z * right.z + self.w * right.w
+    #[inline]
+    #[cfg(not(target_arch = "x86_64"))]
+    fn fast_dot(&self, right: &Self) -> f32{
+        self[0] * right[0] + self[1] * right[1] + self[2] * right[2] + self[3] * right[3]
     }
 }
 
@@ -383,6 +392,7 @@ impl<T:alga::general::RealField> FastMul<Vector3<T>> for Matrix3<T>{
 
 
 #[inline]
+#[cfg(target_arch = "x86_64")]
 fn fast_dot2(a0: &[f32;4], b0: &[f32;4], a1: &[f32;4], b1: &[f32;4]) -> (f32, f32){
     use std::arch::x86_64::*;
     unsafe{
@@ -403,6 +413,7 @@ impl FastMul<Matrix4<f32>> for Matrix4<f32>
 {
     type Output = Matrix4<f32>;
     #[inline]
+    #[cfg(target_arch = "x86_64")]
     fn fast_mul(&self, right: &Matrix4<f32>) -> Matrix4<f32>{
         let row0 = [self.m11, self.m12, self.m13, self.m14];
         let row1 = [self.m21, self.m22, self.m23, self.m24];
@@ -429,25 +440,33 @@ impl FastMul<Matrix4<f32>> for Matrix4<f32>
             m31, m32, m33, m34,
             m41, m42, m43, m44,
         )
+    }
 
-        // Matrix4::new(
-        //     row0.fast_dot(&col0), row0.fast_dot(&col1), row0.fast_dot(&col2), row0.fast_dot(&col3),
-        //     row1.fast_dot(&col0), row1.fast_dot(&col1), row1.fast_dot(&col2), row1.fast_dot(&col3),
-        //     row2.fast_dot(&col0), row2.fast_dot(&col1), row2.fast_dot(&col2), row2.fast_dot(&col3),
-        //     row3.fast_dot(&col0), row3.fast_dot(&col1), row3.fast_dot(&col2), row3.fast_dot(&col3),
-        // )
+    #[inline]
+    #[cfg(not(target_arch = "x86_64"))]
+    fn fast_mul(&self, right: &Matrix4<f32>) -> Matrix4<f32>{
+        let row0 = [self.m11, self.m12, self.m13, self.m14];
+        let row1 = [self.m21, self.m22, self.m23, self.m24];
+        let row2 = [self.m31, self.m32, self.m33, self.m34];
+        let row3 = [self.m41, self.m42, self.m43, self.m44];
+        let col0 = [right.m11, right.m21, right.m31, right.m41];
+        let col1 = [right.m12, right.m22, right.m32, right.m42];
+        let col2 = [right.m13, right.m23, right.m33, right.m43];
+        let col3 = [right.m14, right.m24, right.m34, right.m44];
+        Matrix4::new(
+            row0.fast_dot(&col0), row0.fast_dot(&col1), row0.fast_dot(&col2), row0.fast_dot(&col3),
+            row1.fast_dot(&col0), row1.fast_dot(&col1), row1.fast_dot(&col2), row1.fast_dot(&col3),
+            row2.fast_dot(&col0), row2.fast_dot(&col1), row2.fast_dot(&col2), row2.fast_dot(&col3),
+            row3.fast_dot(&col0), row3.fast_dot(&col1), row3.fast_dot(&col2), row3.fast_dot(&col3),
+        )
     }
 }
 
 impl FastMul<Vector4<f32>> for Matrix4<f32>{
     type Output = Vector4<f32>;
     #[inline]
+    #[cfg(target_arch = "x86_64")]
     fn fast_mul(&self, right: &Vector4<f32>) -> Vector4<f32>{
-        // let row0 = self.row(0);
-        // let row1 = self.row(1);
-        // let row2 = self.row(2);
-        // let row3 = self.row(3);
-        // let right = unsafe{mem::transmute(right)};
         let row0 = [self.m11, self.m12, self.m13, self.m14];
         let row1 = [self.m21, self.m22, self.m23, self.m24];
         let row2 = [self.m31, self.m32, self.m33, self.m34];
@@ -456,9 +475,19 @@ impl FastMul<Vector4<f32>> for Matrix4<f32>{
         let (v0, v1) = fast_dot2(&row0, right, &row1, right);
         let (v2, v3) = fast_dot2(&row2, right, &row3, right);
         Vector4::new(v0, v1, v2, v3)
-        // Vector4::new(
-        //     row0.fast_dot(right), row1.fast_dot(right), row2.fast_dot(right), row3.fast_dot(right)
-        // )
+    }
+
+    #[inline]
+    #[cfg(not(target_arch = "x86_64"))]
+    fn fast_mul(&self, right: &Vector4<f32>) -> Vector4<f32>{
+        let row0 = self.row(0);
+        let row1 = self.row(1);
+        let row2 = self.row(2);
+        let row3 = self.row(3);
+        let right = unsafe{ mem::transmute(right) };
+        Vector4::new(
+            row0.fast_dot(right), row1.fast_dot(right), row2.fast_dot(right), row3.fast_dot(right)
+        )
     }
 }
 
