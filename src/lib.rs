@@ -480,11 +480,11 @@ impl FastMul<Vector4<f32>> for Matrix4<f32>{
     #[inline]
     #[cfg(not(target_arch = "x86_64"))]
     fn fast_mul(&self, right: &Vector4<f32>) -> Vector4<f32>{
-        let row0 = self.row(0);
-        let row1 = self.row(1);
-        let row2 = self.row(2);
-        let row3 = self.row(3);
-        let right = unsafe{ mem::transmute(right) };
+        let row0 = [self.m11, self.m12, self.m13, self.m14];
+        let row1 = [self.m21, self.m22, self.m23, self.m24];
+        let row2 = [self.m31, self.m32, self.m33, self.m34];
+        let row3 = [self.m41, self.m42, self.m43, self.m44];
+        let right = right.as_ref();
         Vector4::new(
             row0.fast_dot(right), row1.fast_dot(right), row2.fast_dot(right), row3.fast_dot(right)
         )
