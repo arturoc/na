@@ -45,9 +45,6 @@ use std::ops::*;
 
 pub mod traits;
 
-#[cfg(feature="unstable")]
-mod tests;
-
 // vec constructors
 #[inline]
 pub fn vec2<T: Scalar>(x: T, y: T) -> Vector2<T>{
@@ -774,22 +771,22 @@ macro_rules! swizzles2_impl{
         impl<T: Scalar> Swizzles2<T> for $v<T>{
             type Swizzle2 = $o<T>;
             fn xy(&self) -> $o<T>{
-                $o::new(self.x, self.y)
+                $o::new(self.x.inlined_clone(), self.y.inlined_clone())
             }
             fn yx(&self) -> $o<T>{
-                $o::new(self.y, self.x)
+                $o::new(self.y.inlined_clone(), self.x.inlined_clone())
             }
         }
 
         impl<T: Scalar> Swizzles2Mut<T> for $v<T>{
             fn set_xy(&mut self, right: &$o<T>){
-                self.x = right.x;
-                self.y = right.y;
+                self.x = right.x.inlined_clone();
+                self.y = right.y.inlined_clone();
             }
 
             fn set_yx(&mut self, right: &$o<T>){
-                self.y = right.x;
-                self.x = right.y;
+                self.y = right.x.inlined_clone();
+                self.x = right.y.inlined_clone();
             }
         }
     )
@@ -873,101 +870,101 @@ macro_rules! swizzles3_impl{
         impl<T: Scalar> Swizzles3<T> for $v<T>{
             type Swizzle3 = $o<T>;
             fn xyz(&self) -> $o<T>{
-                $o::new(self.x, self.y, self.z)
+                $o::new(self.x.inlined_clone(), self.y.inlined_clone(), self.z.inlined_clone())
             }
 
             fn xzy(&self) -> $o<T>{
-                $o::new(self.x, self.z, self.y)
+                $o::new(self.x.inlined_clone(), self.z.inlined_clone(), self.y.inlined_clone())
             }
 
             fn yxz(&self) -> $o<T>{
-                $o::new(self.y, self.x, self.z)
+                $o::new(self.y.inlined_clone(), self.x.inlined_clone(), self.z.inlined_clone())
             }
 
             fn yzx(&self) -> $o<T>{
-                $o::new(self.y, self.z, self.x)
+                $o::new(self.y.inlined_clone(), self.z.inlined_clone(), self.x.inlined_clone())
             }
 
             fn zxy(&self) -> $o<T>{
-                $o::new(self.z, self.x, self.y)
+                $o::new(self.z.inlined_clone(), self.x.inlined_clone(), self.y.inlined_clone())
             }
 
             fn zyx(&self) -> $o<T>{
-                $o::new(self.z, self.y, self.x)
+                $o::new(self.z.inlined_clone(), self.y.inlined_clone(), self.x.inlined_clone())
             }
 
             fn yz(&self) -> Self::Swizzle2{
-                Self::Swizzle2::new(self.y, self.z)
+                Self::Swizzle2::new(self.y.inlined_clone(), self.z.inlined_clone())
             }
 
             fn xz(&self) -> Self::Swizzle2{
-                Self::Swizzle2::new(self.x, self.z)
+                Self::Swizzle2::new(self.x.inlined_clone(), self.z.inlined_clone())
             }
 
             fn zy(&self) -> Self::Swizzle2{
-                Self::Swizzle2::new(self.z, self.y)
+                Self::Swizzle2::new(self.z.inlined_clone(), self.y.inlined_clone())
             }
 
             fn zx(&self) -> Self::Swizzle2{
-                Self::Swizzle2::new(self.z, self.x)
+                Self::Swizzle2::new(self.z.inlined_clone(), self.x.inlined_clone())
             }
         }
 
         impl<T: Scalar> Swizzles3Mut<T> for $v<T>{
             fn set_xyz(&mut self, right: &$o<T>){
-                self.x = right.x;
-                self.y = right.y;
-                self.z = right.z;
+                self.x = right.x.inlined_clone();
+                self.y = right.y.inlined_clone();
+                self.z = right.z.inlined_clone();
             }
 
             fn set_xzy(&mut self, right: &$o<T>){
-                self.x = right.x;
-                self.z = right.y;
-                self.y = right.z;
+                self.x = right.x.inlined_clone();
+                self.z = right.y.inlined_clone();
+                self.y = right.z.inlined_clone();
             }
 
             fn set_yxz(&mut self, right: &$o<T>){
-                self.y = right.x;
-                self.x = right.y;
-                self.z = right.z;
+                self.y = right.x.inlined_clone();
+                self.x = right.y.inlined_clone();
+                self.z = right.z.inlined_clone();
             }
 
             fn set_yzx(&mut self, right: &$o<T>){
-                self.y = right.x;
-                self.z = right.y;
-                self.x = right.z;
+                self.y = right.x.inlined_clone();
+                self.z = right.y.inlined_clone();
+                self.x = right.z.inlined_clone();
             }
 
             fn set_zxy(&mut self, right: &$o<T>){
-                self.z = right.x;
-                self.x = right.y;
-                self.y = right.z;
+                self.z = right.x.inlined_clone();
+                self.x = right.y.inlined_clone();
+                self.y = right.z.inlined_clone();
             }
 
             fn set_zyx(&mut self, right: &$o<T>){
-                self.z = right.x;
-                self.y = right.y;
-                self.x = right.z;
+                self.z = right.x.inlined_clone();
+                self.y = right.y.inlined_clone();
+                self.x = right.z.inlined_clone();
             }
 
             fn set_yz(&mut self, right: &Self::Swizzle2){
-                self.y = right.x;
-                self.z = right.y;
+                self.y = right.x.inlined_clone();
+                self.z = right.y.inlined_clone();
             }
 
             fn set_xz(&mut self, right: &Self::Swizzle2){
-                self.x = right.x;
-                self.z = right.y;
+                self.x = right.x.inlined_clone();
+                self.z = right.y.inlined_clone();
             }
 
             fn set_zy(&mut self, right: &Self::Swizzle2){
-                self.z = right.x;
-                self.y = right.y;
+                self.z = right.x.inlined_clone();
+                self.y = right.y.inlined_clone();
             }
 
             fn set_zx(&mut self, right: &Self::Swizzle2){
-                self.z = right.x;
-                self.x = right.y;
+                self.z = right.x.inlined_clone();
+                self.x = right.y.inlined_clone();
             }
         }
     )
@@ -1150,191 +1147,191 @@ macro_rules! swizzles4_impl{
         impl<T: Scalar> Swizzles4<T> for $v<T>{
             type Swizzle4 = $o<T>;
             fn xyzw(&self) -> Self::Swizzle4{
-                Self::Swizzle4::new(self.x, self.y, self.z, self.w)
+                Self::Swizzle4::new(self.x.inlined_clone(), self.y.inlined_clone(), self.z.inlined_clone(), self.w.inlined_clone())
             }
 
             fn xyw(&self) -> Self::Swizzle3{
-                Self::Swizzle3::new(self.x, self.y, self.w)
+                Self::Swizzle3::new(self.x.inlined_clone(), self.y.inlined_clone(), self.w.inlined_clone())
             }
 
             fn yxw(&self) -> Self::Swizzle3{
-                Self::Swizzle3::new(self.y, self.x, self.w)
+                Self::Swizzle3::new(self.y.inlined_clone(), self.x.inlined_clone(), self.w.inlined_clone())
             }
 
             fn wxy(&self) -> Self::Swizzle3{
-                Self::Swizzle3::new(self.w, self.x, self.y)
+                Self::Swizzle3::new(self.w.inlined_clone(), self.x.inlined_clone(), self.y.inlined_clone())
             }
 
             fn wyx(&self) -> Self::Swizzle3{
-                Self::Swizzle3::new(self.w, self.y, self.x)
+                Self::Swizzle3::new(self.w.inlined_clone(), self.y.inlined_clone(), self.x.inlined_clone())
             }
 
             fn yzw(&self) -> Self::Swizzle3{
-                Self::Swizzle3::new(self.y, self.z, self.w)
+                Self::Swizzle3::new(self.y.inlined_clone(), self.z.inlined_clone(), self.w.inlined_clone())
             }
 
             fn zyw(&self) -> Self::Swizzle3{
-                Self::Swizzle3::new(self.z, self.y, self.w)
+                Self::Swizzle3::new(self.z.inlined_clone(), self.y.inlined_clone(), self.w.inlined_clone())
             }
 
             fn wyz(&self) -> Self::Swizzle3{
-                Self::Swizzle3::new(self.w, self.y, self.z)
+                Self::Swizzle3::new(self.w.inlined_clone(), self.y.inlined_clone(), self.z.inlined_clone())
             }
 
             fn wzy(&self) -> Self::Swizzle3{
-                Self::Swizzle3::new(self.w, self.z, self.y)
+                Self::Swizzle3::new(self.w.inlined_clone(), self.z.inlined_clone(), self.y.inlined_clone())
             }
 
             fn xzw(&self) -> Self::Swizzle3{
-                Self::Swizzle3::new(self.x, self.z, self.w)
+                Self::Swizzle3::new(self.x.inlined_clone(), self.z.inlined_clone(), self.w.inlined_clone())
             }
 
             fn zxw(&self) -> Self::Swizzle3{
-                Self::Swizzle3::new(self.z, self.x, self.w)
+                Self::Swizzle3::new(self.z.inlined_clone(), self.x.inlined_clone(), self.w.inlined_clone())
             }
 
             fn wxz(&self) -> Self::Swizzle3{
-                Self::Swizzle3::new(self.w, self.x, self.x)
+                Self::Swizzle3::new(self.w.inlined_clone(), self.x.inlined_clone(), self.x.inlined_clone())
             }
 
             fn wzx(&self) -> Self::Swizzle3{
-                Self::Swizzle3::new(self.w, self.z, self.x)
+                Self::Swizzle3::new(self.w.inlined_clone(), self.z.inlined_clone(), self.x.inlined_clone())
             }
 
             fn xw(&self) -> Self::Swizzle2{
-                Self::Swizzle2::new(self.x, self.w)
+                Self::Swizzle2::new(self.x.inlined_clone(), self.w.inlined_clone())
             }
 
             fn yw(&self) -> Self::Swizzle2{
-                Self::Swizzle2::new(self.y, self.w)
+                Self::Swizzle2::new(self.y.inlined_clone(), self.w.inlined_clone())
             }
 
             fn zw(&self) -> Self::Swizzle2{
-                Self::Swizzle2::new(self.z, self.w)
+                Self::Swizzle2::new(self.z.inlined_clone(), self.w.inlined_clone())
             }
 
             fn wx(&self) -> Self::Swizzle2{
-                Self::Swizzle2::new(self.w, self.x)
+                Self::Swizzle2::new(self.w.inlined_clone(), self.x.inlined_clone())
             }
 
             fn wy(&self) -> Self::Swizzle2{
-                Self::Swizzle2::new(self.w, self.y)
+                Self::Swizzle2::new(self.w.inlined_clone(), self.y.inlined_clone())
             }
 
             fn wz(&self) -> Self::Swizzle2{
-                Self::Swizzle2::new(self.w, self.z)
+                Self::Swizzle2::new(self.w.inlined_clone(), self.z.inlined_clone())
             }
 
         }
 
         impl<T: Scalar> Swizzles4Mut<T> for $v<T>{
             fn set_xyzw(&mut self, right: &Self::Swizzle4) {
-                self.x = right.x;
-                self.y = right.y;
-                self.z = right.z;
-                self.w = right.w;
+                self.x = right.x.inlined_clone();
+                self.y = right.y.inlined_clone();
+                self.z = right.z.inlined_clone();
+                self.w = right.w.inlined_clone();
             }
 
             fn set_xyw(&mut self, right: &Self::Swizzle3) {
-                self.x = right.x;
-                self.y = right.y;
-                self.w = right.z;
+                self.x = right.x.inlined_clone();
+                self.y = right.y.inlined_clone();
+                self.w = right.z.inlined_clone();
             }
 
             fn set_yxw(&mut self, right: &Self::Swizzle3) {
-                self.y = right.x;
-                self.x = right.y;
-                self.w = right.z;
+                self.y = right.x.inlined_clone();
+                self.x = right.y.inlined_clone();
+                self.w = right.z.inlined_clone();
             }
 
             fn set_wxy(&mut self, right: &Self::Swizzle3) {
-                self.w = right.x;
-                self.x = right.y;
-                self.y = right.z;
+                self.w = right.x.inlined_clone();
+                self.x = right.y.inlined_clone();
+                self.y = right.z.inlined_clone();
             }
 
             fn set_wyx(&mut self, right: &Self::Swizzle3) {
-                self.w = right.x;
-                self.y = right.y;
-                self.x = right.z;
+                self.w = right.x.inlined_clone();
+                self.y = right.y.inlined_clone();
+                self.x = right.z.inlined_clone();
             }
 
             fn set_yzw(&mut self, right: &Self::Swizzle3) {
-                self.y = right.x;
-                self.z = right.y;
-                self.w = right.z;
+                self.y = right.x.inlined_clone();
+                self.z = right.y.inlined_clone();
+                self.w = right.z.inlined_clone();
             }
 
             fn set_zyw(&mut self, right: &Self::Swizzle3) {
-                self.z = right.x;
-                self.y = right.y;
-                self.w = right.z;
+                self.z = right.x.inlined_clone();
+                self.y = right.y.inlined_clone();
+                self.w = right.z.inlined_clone();
             }
 
             fn set_wyz(&mut self, right: &Self::Swizzle3) {
-                self.w = right.x;
-                self.y = right.y;
-                self.z = right.z;
+                self.w = right.x.inlined_clone();
+                self.y = right.y.inlined_clone();
+                self.z = right.z.inlined_clone();
             }
 
             fn set_wzy(&mut self, right: &Self::Swizzle3) {
-                self.w = right.x;
-                self.z = right.y;
-                self.y = right.z;
+                self.w = right.x.inlined_clone();
+                self.z = right.y.inlined_clone();
+                self.y = right.z.inlined_clone();
             }
 
             fn set_xzw(&mut self, right: &Self::Swizzle3) {
-                self.x = right.x;
-                self.z = right.y;
-                self.w = right.z;
+                self.x = right.x.inlined_clone();
+                self.z = right.y.inlined_clone();
+                self.w = right.z.inlined_clone();
             }
 
             fn set_zxw(&mut self, right: &Self::Swizzle3) {
-                self.z = right.x;
-                self.x = right.y;
-                self.w = right.z;
+                self.z = right.x.inlined_clone();
+                self.x = right.y.inlined_clone();
+                self.w = right.z.inlined_clone();
             }
 
             fn set_wxz(&mut self, right: &Self::Swizzle3) {
-                self.w = right.x;
-                self.x = right.y;
-                self.z = right.z;
+                self.w = right.x.inlined_clone();
+                self.x = right.y.inlined_clone();
+                self.z = right.z.inlined_clone();
             }
 
             fn set_wzx(&mut self, right: &Self::Swizzle3) {
-                self.w = right.x;
-                self.z = right.y;
-                self.x = right.z;
+                self.w = right.x.inlined_clone();
+                self.z = right.y.inlined_clone();
+                self.x = right.z.inlined_clone();
             }
 
             fn set_xw(&mut self, right: &Self::Swizzle2) {
-                self.x = right.x;
-                self.w = right.y;
+                self.x = right.x.inlined_clone();
+                self.w = right.y.inlined_clone();
             }
 
             fn set_yw(&mut self, right: &Self::Swizzle2) {
-                self.y = right.x;
-                self.w = right.y;
+                self.y = right.x.inlined_clone();
+                self.w = right.y.inlined_clone();
             }
 
             fn set_zw(&mut self, right: &Self::Swizzle2) {
-                self.z = right.x;
-                self.w = right.y;
+                self.z = right.x.inlined_clone();
+                self.w = right.y.inlined_clone();
             }
 
             fn set_wx(&mut self, right: &Self::Swizzle2) {
-                self.w = right.x;
-                self.x = right.y;
+                self.w = right.x.inlined_clone();
+                self.x = right.y.inlined_clone();
             }
 
             fn set_wy(&mut self, right: &Self::Swizzle2) {
-                self.w = right.x;
-                self.y = right.y;
+                self.w = right.x.inlined_clone();
+                self.y = right.y.inlined_clone();
             }
 
             fn set_wz(&mut self, right: &Self::Swizzle2) {
-                self.w = right.x;
-                self.z = right.y;
+                self.w = right.x.inlined_clone();
+                self.z = right.y.inlined_clone();
             }
 
         }
