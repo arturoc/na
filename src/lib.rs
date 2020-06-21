@@ -797,6 +797,11 @@ swizzles2_impl!(Point3, Point2);
 swizzles2_impl!(Point4, Point2);
 swizzles2_impl!(Point5, Point2);
 swizzles2_impl!(Point6, Point2);
+swizzles2_impl!(Vector2, Vector2);
+swizzles2_impl!(Vector3, Vector2);
+swizzles2_impl!(Vector4, Vector2);
+swizzles2_impl!(Vector5, Vector2);
+swizzles2_impl!(Vector6, Vector2);
 
 
 
@@ -974,6 +979,10 @@ swizzles3_impl!(Point3, Point3);
 swizzles3_impl!(Point4, Point3);
 swizzles3_impl!(Point5, Point3);
 swizzles3_impl!(Point6, Point3);
+swizzles3_impl!(Vector3, Vector3);
+swizzles3_impl!(Vector4, Vector3);
+swizzles3_impl!(Vector5, Vector3);
+swizzles3_impl!(Vector6, Vector3);
 
 
 
@@ -1338,10 +1347,9 @@ macro_rules! swizzles4_impl{
     )
 }
 
-// swizzles4_impl!(Vector4, Vector4);
-// swizzles4_impl!(Vector5, Vector4);
-// swizzles4_impl!(Vector6, Vector4);
-
+swizzles4_impl!(Vector4, Vector4);
+swizzles4_impl!(Vector5, Vector4);
+swizzles4_impl!(Vector6, Vector4);
 swizzles4_impl!(Point4, Point4);
 swizzles4_impl!(Point5, Point4);
 swizzles4_impl!(Point6, Point4);
