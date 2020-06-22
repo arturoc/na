@@ -537,7 +537,7 @@ macro_rules! vec4{
     });
     ($v1: expr) => ({
         use $crate::traits::IntoVec;
-        let v: Vector4<_> = $v1.into_vec();
+        let v: $crate::Vector4<_> = $v1.into_vec();
         v
     });
 }
