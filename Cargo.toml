@@ -15,4 +15,7 @@ simba = "0.1"
 [features]
 unstable=[]
 alga = ["nalgebra/alga"]
+wide = ["simba/wide"]
+packed_simd = ["simba/packed_simd"]
+
 serde-serialize = ["nalgebra/serde-serialize"]
