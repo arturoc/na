@@ -1,8 +1,8 @@
 #![cfg_attr(feature = "unstable", feature(test))]
 
 extern crate nalgebra as na;
-extern crate alga;
 extern crate num_traits as num;
+extern crate simba;
 
 pub type VecN<T,D> = na::VectorN<T,D>;
 pub type Vec1<T=f32> = na::Vector1<T>;
@@ -39,9 +39,9 @@ pub type Translation2<T=f32> = na::Translation2<T>;
 
 pub use na::*;
 pub use na::storage::{Storage, StorageMut};
-pub use alga::general::{Identity, Multiplicative, Additive};
 use std::mem;
 use std::ops::*;
+pub use simba::*;
 
 pub mod traits;
 
@@ -114,28 +114,28 @@ pub trait AsVec<T>{
 
 macro_rules! vec_to_pnt_impl{
     ($v: ident, $p: ident) => (
-        impl<T: alga::general::RealField> ToPnt<$p<T>> for $v<T>{
+        impl<T: na::Scalar> ToPnt<$p<T>> for $v<T>{
             #[inline]
             fn to_pnt(self) -> $p<T>{
                 $p::from(self)
             }
         }
 
-        impl<T: alga::general::RealField> AsPnt<$p<T>> for $v<T>{
+        impl<T: na::Scalar> AsPnt<$p<T>> for $v<T>{
             #[inline]
             fn as_pnt(&self) -> &$p<T>{
                 unsafe{ mem::transmute(self) }
             }
         }
 
-        impl<T: alga::general::RealField> ToVec<$v<T>> for $p<T>{
+        impl<T: na::Scalar> ToVec<$v<T>> for $p<T>{
             #[inline]
             fn to_vec(self) -> $v<T>{
                 self.coords
             }
         }
 
-        impl<T: alga::general::RealField> AsVec<$v<T>> for $p<T>{
+        impl<T: na::Scalar> AsVec<$v<T>> for $p<T>{
             #[inline]
             fn as_vec(&self) -> &$v<T>{
                 &self.coords
@@ -160,331 +160,15 @@ pub trait AsMat<T>{
 }
 
 
-impl<T: alga::general::RealField> ToMat<Matrix4<T>> for Orthographic3<T>{
+impl<T: na::RealField> ToMat<Matrix4<T>> for Orthographic3<T>{
     fn to_mat(self) -> Matrix4<T>{
         self.to_homogeneous()
     }
 }
 
-impl<T: alga::general::RealField> AsMat<Matrix4<T>> for Orthographic3<T>{
+impl<T: na::RealField> AsMat<Matrix4<T>> for Orthographic3<T>{
     fn as_mat(&self) -> &Matrix4<T>{
         self.as_matrix()
-    }
-}
-
-pub trait FastDot<T>{
-    fn fast_dot(&self, right: &Self) -> T;
-}
-
-impl<T:alga::general::RealField> FastDot<T> for [T;2]{
-    #[inline]
-    fn fast_dot(&self, right: &[T;2]) -> T{
-        self[0] * right[0] + self[1] * right[1]
-    }
-}
-
-impl<T:alga::general::RealField> FastDot<T> for [T;3]{
-    #[inline]
-    fn fast_dot(&self, right: &[T;3]) -> T{
-        self[0] * right[0] + self[1] * right[1] + self[2] * right[2]
-    }
-}
-
-impl FastDot<f32> for [f32;4]{
-    #[inline]
-    #[cfg(target_arch = "x86_64")]
-    fn fast_dot(&self, right: &[f32;4]) -> f32 {
-        use std::arch::x86_64::*;
-        unsafe{
-            let a = _mm_set_ps(self[3], self[2], self[1], self[0]);
-            let b = _mm_set_ps(right[3], right[2], right[1], right[0]);
-
-            // let p = _mm_mul_ps(a, b);
-            // let sum1 = _mm_hadd_ps(p, p);
-            // let sum2 = _mm_hadd_ps(sum1, sum1);
-            // *(&sum2 as *const _ as *const _)
-
-            let r = _mm_dp_ps(a, b, 0xFF);
-            *(&r as *const _ as *const _)
-        }
-    }
-
-    #[inline]
-    #[cfg(not(target_arch = "x86_64"))]
-    fn fast_dot(&self, right: &[f32;4]) -> f32 {
-        self[0] * right[0] + self[1] * right[1] + self[2] * right[2] + self[3] * right[3]
-    }
-}
-
-impl<T:alga::general::RealField> FastDot<T> for [T;5]{
-    #[inline]
-    fn fast_dot(&self, right: &[T;5]) -> T{
-        self[0] * right[0] + self[1] * right[1] + self[2] * right[2] + self[3] * right[3] + self[4] * right[4]
-    }
-}
-
-impl<T:alga::general::RealField> FastDot<T> for [T;6]{
-    #[inline]
-    fn fast_dot(&self, right: &[T;6]) -> T{
-        self[0] * right[0] + self[1] * right[1] + self[2] * right[2] + self[3] * right[3] + self[4] * right[4] + self[5] * right[5]
-    }
-}
-
-impl<T:alga::general::RealField> FastDot<T> for Vector2<T>{
-    #[inline]
-    fn fast_dot(&self, right: &Vector2<T>) -> T{
-        self.x * right.x + self.y * right.y
-    }
-}
-
-impl<T:alga::general::RealField> FastDot<T> for Vector3<T>{
-    #[inline]
-    fn fast_dot(&self, right: &Vector3<T>) -> T{
-        self.x * right.x + self.y * right.y + self.z * right.z
-    }
-}
-
-// impl<T:alga::general::RealField> FastDot<T> for Vector4<T>{
-//     #[inline]
-//     fn fast_dot(&self, right: &Vector4<T>) -> T{
-//         self.x * right.x + self.y * right.y + self.z * right.z + self.w * right.w
-//     }
-// }
-
-impl FastDot<f32> for Vector4<f32>{
-    #[inline]
-    #[cfg(target_arch = "x86_64")]
-    fn fast_dot(&self, right: &Vector4<f32>) -> f32{
-        use std::arch::x86_64::*;
-        unsafe{
-            let a = _mm_set_ps(self.w, self.z, self.y, self.x);
-            let b = _mm_set_ps(right.w, right.z, right.y, right.x);
-
-            let r = _mm_dp_ps(a, b, 0xFF);
-            *(&r as *const _ as *const _)
-        }
-    }
-
-    #[inline]
-    #[cfg(not(target_arch = "x86_64"))]
-    fn fast_dot(&self, right: &Vector4<f32>) -> f32{
-        self.x * right.x + self.y * right.y + self.z * right.z + self.w * right.w
-    }
-}
-
-impl<S: Storage<f32, na::U1, na::U4>> FastDot<f32> for na::Matrix<f32, na::U1, na::U4, S> {
-    #[inline]
-    #[cfg(target_arch = "x86_64")]
-    fn fast_dot(&self, right: &Self) -> f32{
-        use std::arch::x86_64::*;
-        unsafe{
-            let a = _mm_set_ps(self[3], self[2], self[1], self[0]);
-            let b = _mm_set_ps(right[3], right[2], right[1], right[0]);
-
-            let r = _mm_dp_ps(a, b, 0xFF);
-            *(&r as *const _ as *const _)
-
-            // let p = _mm_mul_ps(a, b);
-            // let sum1 = _mm_hadd_ps(p, p);
-            // let sum2 = _mm_hadd_ps(sum1, sum1);
-            // *(&sum2 as *const _ as *const _)
-        }
-    }
-
-    #[inline]
-    #[cfg(not(target_arch = "x86_64"))]
-    fn fast_dot(&self, right: &Self) -> f32{
-        self[0] * right[0] + self[1] * right[1] + self[2] * right[2] + self[3] * right[3]
-    }
-}
-
-impl FastDot<f64> for Vector4<f64>{
-    #[inline]
-    fn fast_dot(&self, right: &Vector4<f64>) -> f64{
-        self.x * right.x + self.y * right.y + self.z * right.z + self.w * right.w
-    }
-}
-
-
-impl<T:alga::general::RealField> FastDot<T> for Vector5<T>{
-    #[inline]
-    fn fast_dot(&self, right: &Vector5<T>) -> T{
-        self.x * right.x + self.y * right.y + self.z * right.z + self.w * right.w + self.a * right.a
-    }
-}
-
-impl<T:alga::general::RealField> FastDot<T> for Vector6<T>{
-    #[inline]
-    fn fast_dot(&self, right: &Vector6<T>) -> T{
-        self.x * right.x + self.y * right.y + self.z * right.z + self.w * right.w + self.a * right.a + self.b * right.b
-    }
-}
-
-
-
-pub trait FastMul<T>{
-    type Output;
-    fn fast_mul(&self, right: &T) -> Self::Output;
-}
-
-impl<T:alga::general::RealField> FastMul<Matrix2<T>> for Matrix2<T>{
-    type Output = Matrix2<T>;
-    #[inline]
-    fn fast_mul(&self, right: &Matrix2<T>) -> Matrix2<T>{
-        let row0 = [self.m11, self.m12];
-        let row1 = [self.m21, self.m22];
-        let col0 = [right.m11, right.m21];
-        let col1 = [right.m12, right.m22];
-        Matrix2::new(
-            row0.fast_dot(&col0), row0.fast_dot(&col1),
-            row1.fast_dot(&col0), row1.fast_dot(&col1),
-        )
-    }
-}
-
-impl<T:alga::general::RealField> FastMul<Vector2<T>> for Matrix2<T>{
-    type Output = Vector2<T>;
-    #[inline]
-    fn fast_mul(&self, right: &Vector2<T>) -> Vector2<T>{
-        let row0 = [self.m11, self.m12];
-        let row1 = [self.m21, self.m22];
-        let right = right.as_ref();
-        Vector2::new(
-            row0.fast_dot(right), row1.fast_dot(right)
-        )
-    }
-}
-
-impl<T:alga::general::RealField> FastMul<Matrix3<T>> for Matrix3<T>{
-    type Output = Matrix3<T>;
-    #[inline]
-    fn fast_mul(&self, right: &Matrix3<T>) -> Matrix3<T>{
-        let row0 = [self.m11, self.m12, self.m13];
-        let row1 = [self.m21, self.m22, self.m23];
-        let row2 = [self.m31, self.m32, self.m33];
-        let col0 = [right.m11, right.m21, right.m31];
-        let col1 = [right.m12, right.m22, right.m32];
-        let col2 = [right.m13, right.m23, right.m33];
-        Matrix3::new(
-            row0.fast_dot(&col0), row0.fast_dot(&col1), row0.fast_dot(&col2),
-            row1.fast_dot(&col0), row1.fast_dot(&col1), row1.fast_dot(&col2),
-            row2.fast_dot(&col0), row2.fast_dot(&col1), row2.fast_dot(&col2),
-        )
-    }
-}
-
-impl<T:alga::general::RealField> FastMul<Vector3<T>> for Matrix3<T>{
-    type Output = Vector3<T>;
-    #[inline]
-    fn fast_mul(&self, right: &Vector3<T>) -> Vector3<T>{
-        let row0 = [self.m11, self.m12, self.m13];
-        let row1 = [self.m21, self.m22, self.m23];
-        let row2 = [self.m31, self.m32, self.m33];
-        let right = right.as_ref();
-        Vector3::new(
-            row0.fast_dot(right), row1.fast_dot(right), row2.fast_dot(right)
-        )
-    }
-}
-
-
-#[inline]
-#[cfg(target_arch = "x86_64")]
-fn fast_dot2(a0: &[f32;4], b0: &[f32;4], a1: &[f32;4], b1: &[f32;4]) -> (f32, f32){
-    use std::arch::x86_64::*;
-    unsafe{
-        let a = _mm256_set_ps(
-            a1[3], a1[2], a1[1], a1[0],
-            a0[3], a0[2], a0[1], a0[0]);
-        let b = _mm256_set_ps(
-            b1[3], b1[2], b1[1], b1[0],
-            b0[3], b0[2], b0[1], b0[0]);
-
-        let r = _mm256_dp_ps(a, b, 0xFF);
-        let r: [f32;8] = *(&r as *const _ as *const _);
-        (r[0], r[4])
-    }
-}
-
-impl FastMul<Matrix4<f32>> for Matrix4<f32>
-{
-    type Output = Matrix4<f32>;
-    #[inline]
-    #[cfg(target_arch = "x86_64")]
-    fn fast_mul(&self, right: &Matrix4<f32>) -> Matrix4<f32>{
-        let row0 = [self.m11, self.m12, self.m13, self.m14];
-        let row1 = [self.m21, self.m22, self.m23, self.m24];
-        let row2 = [self.m31, self.m32, self.m33, self.m34];
-        let row3 = [self.m41, self.m42, self.m43, self.m44];
-        let col0 = [right.m11, right.m21, right.m31, right.m41];
-        let col1 = [right.m12, right.m22, right.m32, right.m42];
-        let col2 = [right.m13, right.m23, right.m33, right.m43];
-        let col3 = [right.m14, right.m24, right.m34, right.m44];
-        let (m11, m12) = fast_dot2(&row0, &col0, &row0, &col1);
-        let (m13, m14) = fast_dot2(&row0, &col2, &row0, &col3);
-
-        let (m21, m22) = fast_dot2(&row1, &col0, &row1, &col1);
-        let (m23, m24) = fast_dot2(&row1, &col2, &row1, &col3);
-
-        let (m31, m32) = fast_dot2(&row2, &col0, &row2, &col1);
-        let (m33, m34) = fast_dot2(&row2, &col2, &row2, &col3);
-
-        let (m41, m42) = fast_dot2(&row3, &col0, &row3, &col1);
-        let (m43, m44) = fast_dot2(&row3, &col2, &row3, &col3);
-        Matrix4::new(
-            m11, m12, m13, m14,
-            m21, m22, m23, m24,
-            m31, m32, m33, m34,
-            m41, m42, m43, m44,
-        )
-    }
-
-    #[inline]
-    #[cfg(not(target_arch = "x86_64"))]
-    fn fast_mul(&self, right: &Matrix4<f32>) -> Matrix4<f32>{
-        let row0 = [self.m11, self.m12, self.m13, self.m14];
-        let row1 = [self.m21, self.m22, self.m23, self.m24];
-        let row2 = [self.m31, self.m32, self.m33, self.m34];
-        let row3 = [self.m41, self.m42, self.m43, self.m44];
-        let col0 = [right.m11, right.m21, right.m31, right.m41];
-        let col1 = [right.m12, right.m22, right.m32, right.m42];
-        let col2 = [right.m13, right.m23, right.m33, right.m43];
-        let col3 = [right.m14, right.m24, right.m34, right.m44];
-        Matrix4::new(
-            row0.fast_dot(&col0), row0.fast_dot(&col1), row0.fast_dot(&col2), row0.fast_dot(&col3),
-            row1.fast_dot(&col0), row1.fast_dot(&col1), row1.fast_dot(&col2), row1.fast_dot(&col3),
-            row2.fast_dot(&col0), row2.fast_dot(&col1), row2.fast_dot(&col2), row2.fast_dot(&col3),
-            row3.fast_dot(&col0), row3.fast_dot(&col1), row3.fast_dot(&col2), row3.fast_dot(&col3),
-        )
-    }
-}
-
-impl FastMul<Vector4<f32>> for Matrix4<f32>{
-    type Output = Vector4<f32>;
-    #[inline]
-    #[cfg(target_arch = "x86_64")]
-    fn fast_mul(&self, right: &Vector4<f32>) -> Vector4<f32>{
-        let row0 = [self.m11, self.m12, self.m13, self.m14];
-        let row1 = [self.m21, self.m22, self.m23, self.m24];
-        let row2 = [self.m31, self.m32, self.m33, self.m34];
-        let row3 = [self.m41, self.m42, self.m43, self.m44];
-        let right = right.as_ref();
-        let (v0, v1) = fast_dot2(&row0, right, &row1, right);
-        let (v2, v3) = fast_dot2(&row2, right, &row3, right);
-        Vector4::new(v0, v1, v2, v3)
-    }
-
-    #[inline]
-    #[cfg(not(target_arch = "x86_64"))]
-    fn fast_mul(&self, right: &Vector4<f32>) -> Vector4<f32>{
-        let row0 = [self.m11, self.m12, self.m13, self.m14];
-        let row1 = [self.m21, self.m22, self.m23, self.m24];
-        let row2 = [self.m31, self.m32, self.m33, self.m34];
-        let row3 = [self.m41, self.m42, self.m43, self.m44];
-        let right = right.as_ref();
-        Vector4::new(
-            row0.fast_dot(right), row1.fast_dot(right), row2.fast_dot(right), row3.fast_dot(right)
-        )
     }
 }
 
@@ -493,7 +177,7 @@ pub trait FastInverse{
     fn fast_affine_inverse(&self) -> Option<Self> where Self: Sized;
 }
 
-impl<T:alga::general::RealField> FastInverse for Matrix4<T>{
+impl<T:na::RealField> FastInverse for Matrix4<T>{
     fn fast_orthonormal_inverse(&self) -> Matrix4<T>{
         let _3x3 = Matrix3::new(
             self.m11, self.m21, self.m31,
@@ -501,7 +185,7 @@ impl<T:alga::general::RealField> FastInverse for Matrix4<T>{
             self.m13, self.m23, self.m33,
         );
         let pos = vec3(self.m14, self.m24, self.m34);
-        let pos = -_3x3.fast_mul(&pos);
+        let pos = -_3x3 * pos;
         Matrix4::new(
             self.m11, self.m21, self.m31, pos.x,
             self.m12, self.m22, self.m32, pos.y,
@@ -517,7 +201,7 @@ impl<T:alga::general::RealField> FastInverse for Matrix4<T>{
             self.m31, self.m32, self.m33,
         ).try_inverse().map(|_3x3| {
             let pos = vec3(self.m14, self.m24, self.m34);
-            let pos = -_3x3.fast_mul(&pos);
+            let pos = -_3x3 * pos;
             Matrix4::new(
                 _3x3.m11, _3x3.m12, _3x3.m13, pos.x,
                 _3x3.m21, _3x3.m22, _3x3.m23, pos.y,
@@ -528,20 +212,20 @@ impl<T:alga::general::RealField> FastInverse for Matrix4<T>{
     }
 }
 
-pub trait BaseNum: Scalar +
-                   alga::general::Identity<alga::general::Additive> +
-                   alga::general::Identity<alga::general::Multiplicative> +
-                   num::Zero +
-                   num::One +
-                   Add<Self, Output = Self> + Sub<Self, Output = Self> +
-                   Mul<Self, Output = Self> + Div<Self, Output = Self> +
-                   Rem<Self, Output = Self> +
-                   AddAssign<Self> + SubAssign<Self> +
-                   MulAssign<Self> + DivAssign<Self> +
-                   RemAssign<Self> +
-                   PartialOrd +
-                   'static{
-}
+pub trait BaseNum: Scalar
+    + num::Zero
+    + num::One
+    + Add<Self, Output = Self> + Sub<Self, Output = Self>
+    + Mul<Self, Output = Self> + Div<Self, Output = Self>
+    + Rem<Self, Output = Self>
+    + AddAssign<Self>
+    + SubAssign<Self>
+    + MulAssign<Self>
+    + DivAssign<Self>
+    + RemAssign<Self>
+    + PartialOrd
+    + 'static
+{}
 
 impl BaseNum for i8 { }
 impl BaseNum for i16 { }
@@ -556,11 +240,12 @@ impl BaseNum for usize { }
 impl BaseNum for f32 { }
 impl BaseNum for f64 { }
 
-pub trait BaseInt: BaseNum +
-                   Shl<Self, Output = Self> +
-                   ShlAssign<Self> +
-                   Shr<Self, Output=Self> +
-                   ShrAssign<Self>{}
+pub trait BaseInt: BaseNum
+    + Shl<Self, Output = Self>
+    + ShlAssign<Self>
+    + Shr<Self, Output=Self>
+    + ShrAssign<Self>
+{}
 
 impl BaseInt for i8 { }
 impl BaseInt for i16 { }
@@ -577,86 +262,237 @@ impl BaseInt for usize { }
  * Vector related traits.
  */
 /// Trait grouping most common operations on vectors.
-pub trait NumVec<N>: Add<Self, Output = Self> + Sub<Self, Output = Self> +
-                        // Mul<Self, Output = Self> + Div<Self, Output = Self> +
+pub trait NumVec: Add<Self, Output = Self>
+    + Sub<Self, Output = Self>
+    + Mul<<Self as NumVec>::Field, Output = Self>
+    + Div<<Self as NumVec>::Field, Output = Self>
+    + MulAssign<<Self as NumVec>::Field>
+    + DivAssign<<Self as NumVec>::Field>
+    + AddAssign<Self>
+    + SubAssign<Self>
+    + PartialEq
+    + Sized
 
-                        // Add<N, Output = Self> + Sub<N, Output = Self> +
-                        Mul<N, Output = Self> + Div<N, Output = Self> +
-
-                        AddAssign<Self> + SubAssign<Self> +
-                        // MulAssign<Self> + DivAssign<Self> +
-
-                        // AddAssign<N> + SubAssign<N> +
-                        MulAssign<N> + DivAssign<N> +
-
-                        alga::general::Identity<alga::general::Additive> +
-                        PartialEq
-                        where Self: Sized {
+{
+    type Field: BaseNum;
 }
 
 /// Trait of vector with components implementing the `BaseFloat` trait.
-pub trait FloatVec<N: alga::general::RealField>: NumVec<N> +
-                        alga::linear::NormedSpace +
-                        Neg<Output = Self> +
-                        alga::linear::FiniteDimVectorSpace +
-                        alga::linear::FiniteDimInnerSpace {
+pub trait FloatVec: NumVec + Neg<Output = Self>
+where
+    <Self as NumVec>::Field: na::RealField,
+{
 }
 
+impl<N: BaseNum> NumVec for Vector1<N>{ type Field = N; }
+impl<N: BaseNum> NumVec for Vector2<N>{ type Field = N; }
+impl<N: BaseNum> NumVec for Vector3<N>{ type Field = N; }
+impl<N: BaseNum> NumVec for Vector4<N>{ type Field = N; }
+impl<N: BaseNum> NumVec for Vector5<N>{ type Field = N; }
+impl<N: BaseNum> NumVec for Vector6<N>{ type Field = N; }
 
-impl<N: BaseNum> NumVec<N> for Vector1<N>{}
-impl<N: BaseNum> NumVec<N> for Vector2<N>{}
-impl<N: BaseNum> NumVec<N> for Vector3<N>{}
-impl<N: BaseNum> NumVec<N> for Vector4<N>{}
-impl<N: BaseNum> NumVec<N> for Vector5<N>{}
-impl<N: BaseNum> NumVec<N> for Vector6<N>{}
-
-impl<N: BaseNum + alga::general::RealField> FloatVec<N> for Vector1<N>{}
-impl<N: BaseNum + alga::general::RealField> FloatVec<N> for Vector2<N>{}
-impl<N: BaseNum + alga::general::RealField> FloatVec<N> for Vector3<N>{}
-impl<N: BaseNum + alga::general::RealField> FloatVec<N> for Vector4<N>{}
-impl<N: BaseNum + alga::general::RealField> FloatVec<N> for Vector5<N>{}
-impl<N: BaseNum + alga::general::RealField> FloatVec<N> for Vector6<N>{}
+impl<N: BaseNum + na::RealField> FloatVec for Vector1<N>{}
+impl<N: BaseNum + na::RealField> FloatVec for Vector2<N>{}
+impl<N: BaseNum + na::RealField> FloatVec for Vector3<N>{}
+impl<N: BaseNum + na::RealField> FloatVec for Vector4<N>{}
+impl<N: BaseNum + na::RealField> FloatVec for Vector5<N>{}
+impl<N: BaseNum + na::RealField> FloatVec for Vector6<N>{}
 
 /*
- * Vector related traits.
+ * Point related traits.
  */
-/// Trait grouping most common operations on vectors.
-pub trait NumPnt<N>: // Sub<Self, Output = NumVec<N>> + //TODO: Output Vec
-                        // Mul<Self, Output = Self> + Div<Self, Output = Self> +
+/// Trait grouping most common operations on points.
+pub trait NumPnt: Sub<Self, Output = <Self as NumPnt>::Coordinates>
+    + Mul<<Self as NumPnt>::Field, Output = Self>
+    + Div<<Self as NumPnt>::Field, Output = Self>
+    + MulAssign<<Self as NumPnt>::Field>
+    + DivAssign<<Self as NumPnt>::Field>
+    + Add<<Self as NumPnt>::Coordinates, Output = Self>
+    + Sub<<Self as NumPnt>::Coordinates, Output = Self>
+    + AddAssign<<Self as NumPnt>::Coordinates>
+    + SubAssign<<Self as NumPnt>::Coordinates>
+    + PartialEq
+    + Sized
+{
+    type Field: BaseNum;
+    type Coordinates: std::ops::Index<usize, Output = Self::Field>
+        + std::ops::IndexMut<usize>
+        + Add<Self::Coordinates, Output = Self::Coordinates>
+        + Sub<Self::Coordinates, Output = Self::Coordinates>
+        + AddAssign<Self::Coordinates>
+        + SubAssign<Self::Coordinates>
+        + Mul<Self::Field, Output = Self::Coordinates>
+        + Div<Self::Field, Output = Self::Coordinates>
+        + MulAssign<Self::Field>
+        + DivAssign<Self::Field>;
 
-                        // Add<N, Output = Self> + Sub<N, Output = Self> +
-                        Mul<N, Output = Self> + Div<N, Output = Self> +
-
-                        // MulAssign<Self> + DivAssign<Self> +
-
-                        // AddAssign<N> + SubAssign<N> +
-                        MulAssign<N> + DivAssign<N> +
-                        PartialEq
-                        where Self: Sized {
+    fn coordinates(&self) -> Self::Coordinates;
+    fn from_coordiantes(coords: Self::Coordinates) -> Self;
 }
 
-/// Trait of vector with components implementing the `BaseFloat` trait.
-pub trait FloatPnt<N: alga::general::RealField>: NumPnt<N> +
-                        Neg<Output = Self> +
-                        alga::linear::AffineSpace +
-                        alga::linear::EuclideanSpace {
+/// Trait of vector with components implementing the `RealField` trait.
+pub trait FloatPnt: NumPnt + Neg<Output = Self>
+where
+    <Self as NumPnt>::Field: RealField + Neg<Output = <Self as NumPnt>::Field>,
+    <Self as NumPnt>::Coordinates: Neg<Output = <Self as NumPnt>::Coordinates>
+{
+    fn origin() -> Self;
+    fn distance(&self, b: &Self) -> Self::Field;
+    fn distance_squared(&self, b: &Self) -> Self::Field;
 }
 
 
-impl<N: BaseNum> NumPnt<N> for Point1<N>{}
-impl<N: BaseNum> NumPnt<N> for Point2<N>{}
-impl<N: BaseNum> NumPnt<N> for Point3<N>{}
-impl<N: BaseNum> NumPnt<N> for Point4<N>{}
-impl<N: BaseNum> NumPnt<N> for Point5<N>{}
-impl<N: BaseNum> NumPnt<N> for Point6<N>{}
+impl<N: BaseNum> NumPnt for Point1<N>{
+    type Field = N;
+    type Coordinates = Vector1<N>;
 
-impl<N: BaseNum + alga::general::RealField> FloatPnt<N> for Point1<N>{}
-impl<N: BaseNum + alga::general::RealField> FloatPnt<N> for Point2<N>{}
-impl<N: BaseNum + alga::general::RealField> FloatPnt<N> for Point3<N>{}
-impl<N: BaseNum + alga::general::RealField> FloatPnt<N> for Point4<N>{}
-impl<N: BaseNum + alga::general::RealField> FloatPnt<N> for Point5<N>{}
-impl<N: BaseNum + alga::general::RealField> FloatPnt<N> for Point6<N>{}
+    fn coordinates(&self) -> Self::Coordinates{
+        self.clone().to_vec()
+    }
 
+    fn from_coordiantes(coords: Self::Coordinates) -> Self {
+        Self::from(coords)
+    }
+}
+impl<N: BaseNum> NumPnt for Point2<N>{
+    type Field = N;
+    type Coordinates = Vector2<N>;
+
+    fn coordinates(&self) -> Self::Coordinates{
+        self.clone().to_vec()
+    }
+
+    fn from_coordiantes(coords: Self::Coordinates) -> Self {
+        Self::from(coords)
+    }
+}
+impl<N: BaseNum> NumPnt for Point3<N>{
+    type Field = N;
+    type Coordinates = Vector3<N>;
+
+    fn coordinates(&self) -> Self::Coordinates{
+        self.clone().to_vec()
+    }
+
+    fn from_coordiantes(coords: Self::Coordinates) -> Self {
+        Self::from(coords)
+    }
+}
+impl<N: BaseNum> NumPnt for Point4<N>{
+    type Field = N;
+    type Coordinates = Vector4<N>;
+
+    fn coordinates(&self) -> Self::Coordinates{
+        self.clone().to_vec()
+    }
+
+    fn from_coordiantes(coords: Self::Coordinates) -> Self {
+        Self::from(coords)
+    }
+}
+impl<N: BaseNum> NumPnt for Point5<N>{
+    type Field = N;
+    type Coordinates = Vector5<N>;
+
+    fn coordinates(&self) -> Self::Coordinates{
+        self.clone().to_vec()
+    }
+
+    fn from_coordiantes(coords: Self::Coordinates) -> Self {
+        Self::from(coords)
+    }
+}
+impl<N: BaseNum> NumPnt for Point6<N>{
+    type Field = N;
+    type Coordinates = Vector6<N>;
+
+    fn coordinates(&self) -> Self::Coordinates{
+        self.clone().to_vec()
+    }
+
+    fn from_coordiantes(coords: Self::Coordinates) -> Self {
+        Self::from(coords)
+    }
+}
+
+impl<N: BaseNum + na::RealField> FloatPnt for Point1<N>{
+    fn origin() -> Self{
+        Point::origin()
+    }
+
+    fn distance(&self, b: &Self) -> <Self as NumPnt>::Field {
+        na::distance(self, b)
+    }
+
+    fn distance_squared(&self, b: &Self) -> <Self as NumPnt>::Field {
+        na::distance_squared(self, b)
+    }
+}
+impl<N: BaseNum + na::RealField> FloatPnt for Point2<N>{
+    fn origin() -> Self{
+        Point::origin()
+    }
+
+    fn distance(&self, b: &Self) -> <Self as NumPnt>::Field {
+        na::distance(self, b)
+    }
+
+    fn distance_squared(&self, b: &Self) -> <Self as NumPnt>::Field {
+        na::distance_squared(self, b)
+    }
+}
+impl<N: BaseNum + na::RealField> FloatPnt for Point3<N>{
+    fn origin() -> Self{
+        Point::origin()
+    }
+
+    fn distance(&self, b: &Self) -> <Self as NumPnt>::Field {
+        na::distance(self, b)
+    }
+
+    fn distance_squared(&self, b: &Self) -> <Self as NumPnt>::Field {
+        na::distance_squared(self, b)
+    }
+}
+impl<N: BaseNum + na::RealField> FloatPnt for Point4<N>{
+    fn origin() -> Self{
+        Point::origin()
+    }
+
+    fn distance(&self, b: &Self) -> <Self as NumPnt>::Field {
+        na::distance(self, b)
+    }
+
+    fn distance_squared(&self, b: &Self) -> <Self as NumPnt>::Field {
+        na::distance_squared(self, b)
+    }
+}
+impl<N: BaseNum + na::RealField> FloatPnt for Point5<N>{
+    fn origin() -> Self{
+        Point::origin()
+    }
+
+    fn distance(&self, b: &Self) -> <Self as NumPnt>::Field {
+        na::distance(self, b)
+    }
+
+    fn distance_squared(&self, b: &Self) -> <Self as NumPnt>::Field {
+        na::distance_squared(self, b)
+    }
+}
+impl<N: BaseNum + na::RealField> FloatPnt for Point6<N>{
+    fn origin() -> Self{
+        Point::origin()
+    }
+
+    fn distance(&self, b: &Self) -> <Self as NumPnt>::Field {
+        na::distance(self, b)
+    }
+
+    fn distance_squared(&self, b: &Self) -> <Self as NumPnt>::Field {
+        na::distance_squared(self, b)
+    }
+}
 
 #[macro_export]
 macro_rules! vec2{

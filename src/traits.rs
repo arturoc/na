@@ -3,8 +3,8 @@ use na::*;
 use na::storage::Storage;
 
 
-pub trait JoinVec<T: ::BaseNum, U>{
-    type Output: ::NumVec<T>;
+pub trait JoinVec<T, U>{
+    type Output;
     fn join(self, u: U) -> Self::Output;
 }
 
@@ -186,12 +186,12 @@ impl<'a, T:Scalar> IntoVec<Vector4<T>> for &'a[T]{
 }
 
 
-pub trait JoinPnt<T: ::BaseNum, U>{
-    type Output: ::NumPnt<T>;
+pub trait JoinPnt<T, U>{
+    type Output;
     fn join(self, v: U) -> Self::Output;
 }
 
-impl<T: ::BaseNum> JoinPnt<T,T> for T{
+impl<T: na::Scalar> JoinPnt<T,T> for T{
     type Output = Point2<T>;
     #[inline]
     fn join(self, v: T) -> Point2<T>{
@@ -199,7 +199,7 @@ impl<T: ::BaseNum> JoinPnt<T,T> for T{
     }
 }
 
-impl<T: ::BaseNum> JoinPnt<T,Point2<T>> for T{
+impl<T: na::Scalar> JoinPnt<T,Point2<T>> for T{
     type Output = Point3<T>;
     #[inline]
     fn join(self, v: Point2<T>) -> Point3<T>{
@@ -208,7 +208,7 @@ impl<T: ::BaseNum> JoinPnt<T,Point2<T>> for T{
     }
 }
 
-impl<T: ::BaseNum> JoinPnt<T,T> for Point2<T>{
+impl<T: na::Scalar> JoinPnt<T,T> for Point2<T>{
     type Output = Point3<T>;
     #[inline]
     fn join(self, v: T) -> Point3<T>{
@@ -217,7 +217,7 @@ impl<T: ::BaseNum> JoinPnt<T,T> for Point2<T>{
     }
 }
 
-impl<T: ::BaseNum> JoinPnt<T,Point3<T>> for T{
+impl<T: na::Scalar> JoinPnt<T,Point3<T>> for T{
     type Output = Point4<T>;
     #[inline]
     fn join(self, v: Point3<T>) -> Point4<T>{
@@ -226,7 +226,7 @@ impl<T: ::BaseNum> JoinPnt<T,Point3<T>> for T{
     }
 }
 
-impl<T: ::BaseNum> JoinPnt<T,T> for Point3<T>{
+impl<T: na::Scalar> JoinPnt<T,T> for Point3<T>{
     type Output = Point4<T>;
     #[inline]
     fn join(self, v: T) -> Point4<T>{
@@ -235,7 +235,7 @@ impl<T: ::BaseNum> JoinPnt<T,T> for Point3<T>{
     }
 }
 
-impl<T: ::BaseNum> JoinPnt<T,Point2<T>> for Point2<T>{
+impl<T: na::Scalar> JoinPnt<T,Point2<T>> for Point2<T>{
     type Output = Point4<T>;
     #[inline]
     fn join(self, v: Point2<T>) -> Point4<T>{
