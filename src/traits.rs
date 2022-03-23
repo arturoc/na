@@ -20,7 +20,7 @@ impl<T: ::BaseNum, S: Storage<T,U2,U1>> JoinVec<T,Vector<T, na::U2, S>> for T{
     type Output = Vector3<T>;
     #[inline]
     fn join(self, v: Vector<T, na::U2, S>) -> Vector3<T>{
-        Vector3::new(self, v[0].inlined_clone(), v[1].inlined_clone())
+        Vector3::new(self, v[0].clone(), v[1].clone())
     }
 }
 
@@ -28,7 +28,7 @@ impl<T: ::BaseNum, S: Storage<T,U3,U1>> JoinVec<T,Vector<T, na::U3, S>> for T{
     type Output = Vector4<T>;
     #[inline]
     fn join(self, v: Vector<T, na::U3, S>) -> Vector4<T>{
-        Vector4::new(self, v[0].inlined_clone(), v[1].inlined_clone(), v[2].inlined_clone())
+        Vector4::new(self, v[0].clone(), v[1].clone(), v[2].clone())
     }
 }
 
@@ -39,7 +39,7 @@ impl<'a, T, S> JoinVec<T,T> for Matrix<T,na::U1,na::U1,S>
     type Output = Vector2<T>;
     #[inline]
     fn join(self, v: T) -> Vector2<T>{
-        Vector2::new(self[0].inlined_clone(), v)
+        Vector2::new(self[0].clone(), v)
     }
 }
 
@@ -54,7 +54,7 @@ impl<'a, T, S> JoinVec<T,T> for Matrix<T,na::U2,na::U1,S>
     type Output = Vector3<T>;
     #[inline]
     fn join(self, v: T) -> Vector3<T>{
-        Vector3::new(self[0].inlined_clone(), self[1].inlined_clone(), v)
+        Vector3::new(self[0].clone(), self[1].clone(), v)
     }
 }
 
@@ -65,7 +65,7 @@ impl<'a, T, S> JoinVec<T,Vector<T, na::U2, S>> for Vector<T, na::U2, S>
     type Output = Vector4<T>;
     #[inline]
     fn join(self, v: Vector<T, na::U2, S>) -> Vector4<T>{
-        Vector4::new(self[0].inlined_clone(), self[1].inlined_clone(), v[0].inlined_clone(), v[1].inlined_clone())
+        Vector4::new(self[0].clone(), self[1].clone(), v[0].clone(), v[1].clone())
     }
 }
 
@@ -80,7 +80,7 @@ impl<'a, T, S> JoinVec<T,T> for Vector<T,na::U3,S>
     type Output = Vector4<T>;
     #[inline]
     fn join(self, v: T) -> Vector4<T>{
-        Vector4::new(self[0].inlined_clone(), self[1].inlined_clone(), self[2].inlined_clone(), v)
+        Vector4::new(self[0].clone(), self[1].clone(), self[2].clone(), v)
     }
 }
 
@@ -92,7 +92,7 @@ impl<'a, T, S1, S2> JoinVec<T,Vector<T,na::U2,S2>> for Vector<T,na::U1,S1>
     type Output = Vector3<T>;
     #[inline]
     fn join(self, v: Vector<T,na::U2,S2>) -> Vector3<T>{
-        Vector3::new(self[0].inlined_clone(), v[0].inlined_clone(), v[1].inlined_clone())
+        Vector3::new(self[0].clone(), v[0].clone(), v[1].clone())
     }
 }
 
@@ -104,7 +104,7 @@ impl<'a, T, S1, S3> JoinVec<T,Vector<T,na::U3,S3>> for Matrix<T,na::U1,na::U1,S1
     type Output = Vector4<T>;
     #[inline]
     fn join(self, v: Vector<T,na::U3,S3>) -> Vector4<T>{
-        Vector4::new(self[0].inlined_clone(), v[0].inlined_clone(), v[1].inlined_clone(), v[2].inlined_clone())
+        Vector4::new(self[0].clone(), v[0].clone(), v[1].clone(), v[2].clone())
     }
 }
 
@@ -122,7 +122,7 @@ impl<V> IntoVec<V> for V{
 impl<T:Scalar> IntoVec<Vector2<T>> for T{
     #[inline]
     fn into_vec(self) -> Vector2<T>{
-        Vector2::new(self.inlined_clone(), self)
+        Vector2::new(self.clone(), self)
     }
 }
 
@@ -137,14 +137,14 @@ impl<T:Scalar> IntoVec<Vector2<T>> for [T;2]{
 impl<'a, T:Scalar> IntoVec<Vector2<T>> for &'a[T]{
     #[inline]
     fn into_vec(self) -> Vector2<T>{
-        Vector2::new(self[0].inlined_clone(), self[1].inlined_clone())
+        Vector2::new(self[0].clone(), self[1].clone())
     }
 }
 
 impl<T:Scalar> IntoVec<Vector3<T>> for T{
     #[inline]
     fn into_vec(self) -> Vector3<T>{
-        Vector3::new(self.inlined_clone(), self.inlined_clone(), self)
+        Vector3::new(self.clone(), self.clone(), self)
     }
 }
 
@@ -159,14 +159,14 @@ impl<T:Scalar> IntoVec<Vector3<T>> for [T;3]{
 impl<'a, T:Scalar> IntoVec<Vector3<T>> for &'a[T]{
     #[inline]
     fn into_vec(self) -> Vector3<T>{
-        Vector3::new(self[0].inlined_clone(), self[1].inlined_clone(), self[2].inlined_clone())
+        Vector3::new(self[0].clone(), self[1].clone(), self[2].clone())
     }
 }
 
 impl<T:Scalar> IntoVec<Vector4<T>> for T{
     #[inline]
     fn into_vec(self) -> Vector4<T>{
-        Vector4::new(self.inlined_clone(), self.inlined_clone(), self.inlined_clone(), self)
+        Vector4::new(self.clone(), self.clone(), self.clone(), self)
     }
 }
 
@@ -181,7 +181,7 @@ impl<T:Scalar> IntoVec<Vector4<T>> for [T;4]{
 impl<'a, T:Scalar> IntoVec<Vector4<T>> for &'a[T]{
     #[inline]
     fn into_vec(self) -> Vector4<T>{
-        Vector4::new(self[0].inlined_clone(), self[1].inlined_clone(), self[2].inlined_clone(), self[3].inlined_clone())
+        Vector4::new(self[0].clone(), self[1].clone(), self[2].clone(), self[3].clone())
     }
 }
 
@@ -259,7 +259,7 @@ impl<V> IntoPnt<V> for V{
 impl<T:Scalar> IntoPnt<Point2<T>> for T{
     #[inline]
     fn into_pnt(self) -> Point2<T>{
-        Point2::new(self.inlined_clone(), self)
+        Point2::new(self.clone(), self)
     }
 }
 
@@ -274,14 +274,14 @@ impl<T:Scalar> IntoPnt<Point2<T>> for [T;2]{
 impl<'a, T:Scalar> IntoPnt<Point2<T>> for &'a[T]{
     #[inline]
     fn into_pnt(self) -> Point2<T>{
-        Point2::new(self[0].inlined_clone(), self[1].inlined_clone())
+        Point2::new(self[0].clone(), self[1].clone())
     }
 }
 
 impl<T:Scalar> IntoPnt<Point3<T>> for T{
     #[inline]
     fn into_pnt(self) -> Point3<T>{
-        Point3::new(self.inlined_clone(), self.inlined_clone(), self)
+        Point3::new(self.clone(), self.clone(), self)
     }
 }
 
@@ -296,14 +296,14 @@ impl<T:Scalar> IntoPnt<Point3<T>> for [T;3]{
 impl<'a, T:Scalar> IntoPnt<Point3<T>> for &'a[T]{
     #[inline]
     fn into_pnt(self) -> Point3<T>{
-        Point3::new(self[0].inlined_clone(), self[1].inlined_clone(), self[2].inlined_clone())
+        Point3::new(self[0].clone(), self[1].clone(), self[2].clone())
     }
 }
 
 impl<T:Scalar> IntoPnt<Point4<T>> for T{
     #[inline]
     fn into_pnt(self) -> Point4<T>{
-        Point4::new(self.inlined_clone(), self.inlined_clone(), self.inlined_clone(), self)
+        Point4::new(self.clone(), self.clone(), self.clone(), self)
     }
 }
 
@@ -318,6 +318,6 @@ impl<T:Scalar> IntoPnt<Point4<T>> for [T;4]{
 impl<'a, T:Scalar> IntoPnt<Point4<T>> for &'a[T]{
     #[inline]
     fn into_pnt(self) -> Point4<T>{
-        Point4::new(self[0].inlined_clone(), self[1].inlined_clone(), self[2].inlined_clone(), self[3].inlined_clone())
+        Point4::new(self[0].clone(), self[1].clone(), self[2].clone(), self[3].clone())
     }
 }
