@@ -28,6 +28,8 @@ pub type Mat6<T=f32> = na::Matrix6<T>;
 
 pub type Quat<T=f32> = na::Quaternion<T>;
 pub type UnitQuat<T=f32> = na::UnitQuaternion<T>;
+pub type DualQuat<T=f32> = na::DualQuaternion<T>;
+pub type UnitDualQuat<T=f32> = na::UnitDualQuaternion<T>;
 
 pub type Isometry3<T=f32> = na::Isometry3<T>;
 pub type Isometry2<T=f32> = na::Isometry2<T>;
