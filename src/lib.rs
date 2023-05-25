@@ -1,8 +1,7 @@
 #![cfg_attr(feature = "unstable", feature(test))]
 
-extern crate nalgebra as na;
-extern crate num_traits as num;
-extern crate simba;
+use nalgebra as na;
+use num_traits as num;
 
 pub type Vec1<T=f32> = na::Vector1<T>;
 pub type Vec2<T=f32> = na::Vector2<T>;

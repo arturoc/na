@@ -6,6 +6,7 @@ description = "na is a wrapper around nalgebra to make it easier and mostly less
 homepage = "http://github.com/arturoc/na"
 repository = "http://github.com/arturoc/na"
 license = "BSD-3-Clause"
+edition = "2021"
 
 [dependencies]
 nalgebra = "0.32"

@@ -1,4 +1,4 @@
-use na;
+use nalgebra as na;
 use na::*;
 use na::storage::Storage;
 
@@ -8,7 +8,7 @@ pub trait JoinVec<T, U>{
     fn join(self, u: U) -> Self::Output;
 }
 
-impl<T: ::BaseNum> JoinVec<T,T> for T{
+impl<T: super::BaseNum> JoinVec<T,T> for T{
     type Output = Vector2<T>;
     #[inline]
     fn join(self, v: T) -> Vector2<T>{
@@ -16,7 +16,7 @@ impl<T: ::BaseNum> JoinVec<T,T> for T{
     }
 }
 
-impl<T: ::BaseNum, S: Storage<T,U2,U1>> JoinVec<T,Vector<T, na::U2, S>> for T{
+impl<T: super::BaseNum, S: Storage<T,U2,U1>> JoinVec<T,Vector<T, na::U2, S>> for T{
     type Output = Vector3<T>;
     #[inline]
     fn join(self, v: Vector<T, na::U2, S>) -> Vector3<T>{
@@ -24,7 +24,7 @@ impl<T: ::BaseNum, S: Storage<T,U2,U1>> JoinVec<T,Vector<T, na::U2, S>> for T{
     }
 }
 
-impl<T: ::BaseNum, S: Storage<T,U3,U1>> JoinVec<T,Vector<T, na::U3, S>> for T{
+impl<T: super::BaseNum, S: Storage<T,U3,U1>> JoinVec<T,Vector<T, na::U3, S>> for T{
     type Output = Vector4<T>;
     #[inline]
     fn join(self, v: Vector<T, na::U3, S>) -> Vector4<T>{
@@ -33,7 +33,7 @@ impl<T: ::BaseNum, S: Storage<T,U3,U1>> JoinVec<T,Vector<T, na::U3, S>> for T{
 }
 
 impl<'a, T, S> JoinVec<T,T> for Matrix<T,na::U1,na::U1,S>
-    where T: ::BaseNum,
+    where T: super::BaseNum,
           S: Storage<T, na::U1, na::U1>
 {
     type Output = Vector2<T>;
@@ -48,7 +48,7 @@ impl<'a, T, S> JoinVec<T,T> for Matrix<T,na::U1,na::U1,S>
 
 
 impl<'a, T, S> JoinVec<T,T> for Matrix<T,na::U2,na::U1,S>
-    where T: ::BaseNum,
+    where T: super::BaseNum,
           S: Storage<T,na::U2,na::U1>
 {
     type Output = Vector3<T>;
@@ -59,7 +59,7 @@ impl<'a, T, S> JoinVec<T,T> for Matrix<T,na::U2,na::U1,S>
 }
 
 impl<'a, T, S> JoinVec<T,Vector<T, na::U2, S>> for Vector<T, na::U2, S>
-    where T: ::BaseNum,
+    where T: super::BaseNum,
           S: Storage<T, na::U2, na::U1>,
 {
     type Output = Vector4<T>;
@@ -74,7 +74,7 @@ impl<'a, T, S> JoinVec<T,Vector<T, na::U2, S>> for Vector<T, na::U2, S>
 
 
 impl<'a, T, S> JoinVec<T,T> for Vector<T,na::U3,S>
-    where T: ::BaseNum,
+    where T: super::BaseNum,
           S: Storage<T,na::U3,na::U1>
 {
     type Output = Vector4<T>;
@@ -85,7 +85,7 @@ impl<'a, T, S> JoinVec<T,T> for Vector<T,na::U3,S>
 }
 
 impl<'a, T, S1, S2> JoinVec<T,Vector<T,na::U2,S2>> for Vector<T,na::U1,S1>
-    where T: ::BaseNum,
+    where T: super::BaseNum,
           S1: Storage<T,na::U1,na::U1>,
           S2: Storage<T,na::U2,na::U1>,
 {
@@ -97,7 +97,7 @@ impl<'a, T, S1, S2> JoinVec<T,Vector<T,na::U2,S2>> for Vector<T,na::U1,S1>
 }
 
 impl<'a, T, S1, S3> JoinVec<T,Vector<T,na::U3,S3>> for Matrix<T,na::U1,na::U1,S1>
-    where T: ::BaseNum,
+    where T: super::BaseNum,
           S1: Storage<T,na::U1,na::U1>,
           S3: Storage<T,na::U3,na::U1>,
 {
