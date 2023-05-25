@@ -36,6 +36,8 @@ pub type Rotation3<T=f32> = na::Rotation3<T>;
 pub type Rotation2<T=f32> = na::Rotation2<T>;
 pub type Translation3<T=f32> = na::Translation3<T>;
 pub type Translation2<T=f32> = na::Translation2<T>;
+pub type Scale3<T=f32> = na::Scale3<T>;
+pub type Scale2<T=f32> = na::Scale2<T>;
 
 pub use na::*;
 pub use na::storage::{Storage, StorageMut};
