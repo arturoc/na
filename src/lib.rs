@@ -213,6 +213,23 @@ impl<T:na::RealField> FastInverse for Matrix4<T>{
     }
 }
 
+pub trait OrthonormalDecompose {
+    fn orthonormal_decompose(&self) -> (Translation3, Rotation3, Vec3);
+}
+
+impl OrthonormalDecompose for Mat4 {
+    fn orthonormal_decompose(&self) -> (Translation3, Rotation3, Vec3) {
+        let translation: Translation3 = convert_ref_unchecked(self);
+        let scale = Vec3::new(self.column(0).norm(), self.column(1).norm(), self.column(2).norm());
+        let rotation = Rotation3::from_matrix_unchecked(Mat3::from_columns(&[
+            self.column(0).fixed_rows(0) / scale.x,
+            self.column(1).fixed_rows(0) / scale.y,
+            self.column(2).fixed_rows(0) / scale.z
+        ]));
+        (translation, rotation, scale)
+    }
+}
+
 pub trait BaseNum: Scalar
     + num::Zero
     + num::One
