@@ -214,6 +214,37 @@ impl<T:na::RealField> FastInverse for Matrix4<T>{
     }
 }
 
+pub trait OrthonormalDecompose {
+    fn orthonormal_decompose(&self) -> (Translation3, Rotation3, Scale3);
+}
+
+impl OrthonormalDecompose for Mat4 {
+    fn orthonormal_decompose(&self) -> (Translation3, Rotation3, Scale3) {
+        let translation: Translation3 = convert_ref_unchecked(self);
+        let scale = Scale3::new(self.column(0).norm(), self.column(1).norm(), self.column(2).norm());
+        let rotation = Rotation3::from_matrix_unchecked(Mat3::from_columns(&[
+            self.column(0).fixed_rows(0) / scale.x,
+            self.column(1).fixed_rows(0) / scale.y,
+            self.column(2).fixed_rows(0) / scale.z
+        ]));
+        (translation, rotation, scale)
+    }
+}
+
+#[test]
+fn test_orthonormal_decompose() {
+    use approx::assert_relative_eq;
+
+    let translation = vec3!(0f32, 0., 1.);
+    let scale = vec3(2f32, 2., 2.);
+    let axis_angle = vec3(1f32, 0., 0.);
+    let mat = Mat4::new_translation(&translation) * Mat4::new_rotation(axis_angle) * Mat4::new_nonuniform_scaling(&scale);
+    let (dtranslation, drotation, dscale) = mat.orthonormal_decompose();
+    assert_relative_eq!(translation, dtranslation.vector);
+    assert_relative_eq!(scale, dscale.vector);
+    assert_relative_eq!(Rotation3::from_axis_angle(&Unit::new_unchecked(axis_angle), 1.), drotation);
+}
+
 pub trait BaseNum: Scalar
     + num::Zero
     + num::One
