@@ -49,52 +49,52 @@ pub mod traits;
 
 // vec constructors
 #[inline]
-pub fn vec2<T: Scalar>(x: T, y: T) -> Vector2<T>{
+pub const fn vec2<T: Scalar>(x: T, y: T) -> Vector2<T>{
     Vector2::new(x,y)
 }
 
 #[inline]
-pub fn vec3<T: Scalar>(x: T, y: T, z: T) -> Vector3<T>{
+pub const fn vec3<T: Scalar>(x: T, y: T, z: T) -> Vector3<T>{
     Vector3::new(x,y,z)
 }
 
 #[inline]
-pub fn vec4<T: Scalar>(x: T, y: T, z: T, w: T) -> Vector4<T>{
+pub const fn vec4<T: Scalar>(x: T, y: T, z: T, w: T) -> Vector4<T>{
     Vector4::new(x,y,z,w)
 }
 
 #[inline]
-pub fn vec5<T: Scalar>(x: T, y: T, z: T, w: T, a: T) -> Vector5<T>{
+pub const fn vec5<T: Scalar>(x: T, y: T, z: T, w: T, a: T) -> Vector5<T>{
     Vector5::new(x,y,z,w,a)
 }
 
 #[inline]
-pub fn vec6<T: Scalar>(x: T, y: T, z: T, w: T, a: T, b: T) -> Vector6<T>{
+pub const fn vec6<T: Scalar>(x: T, y: T, z: T, w: T, a: T, b: T) -> Vector6<T>{
     Vector6::new(x,y,z,w,a,b)
 }
 
 #[inline]
-pub fn pnt2<T: Scalar>(x: T, y: T) -> Point2<T>{
+pub const fn pnt2<T: Scalar>(x: T, y: T) -> Point2<T>{
     Point2::new(x,y)
 }
 
 #[inline]
-pub fn pnt3<T: Scalar>(x: T, y: T, z: T) -> Point3<T>{
+pub const fn pnt3<T: Scalar>(x: T, y: T, z: T) -> Point3<T>{
     Point3::new(x,y,z)
 }
 
 #[inline]
-pub fn pnt4<T: Scalar>(x: T, y: T, z: T, w: T) -> Point4<T>{
+pub const fn pnt4<T: Scalar>(x: T, y: T, z: T, w: T) -> Point4<T>{
     Point4::new(x,y,z,w)
 }
 
 #[inline]
-pub fn pnt5<T: Scalar>(x: T, y: T, z: T, w: T, a: T) -> Point5<T>{
+pub const fn pnt5<T: Scalar>(x: T, y: T, z: T, w: T, a: T) -> Point5<T>{
     Point5::new(x,y,z,w,a)
 }
 
 #[inline]
-pub fn pnt6<T: Scalar>(x: T, y: T, z: T, w: T, a: T, b: T) -> Point6<T>{
+pub const fn pnt6<T: Scalar>(x: T, y: T, z: T, w: T, a: T, b: T) -> Point6<T>{
     Point6::new(x,y,z,w,a,b)
 }
 
