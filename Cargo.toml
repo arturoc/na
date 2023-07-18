@@ -21,5 +21,6 @@ unstable=[]
 alga = ["nalgebra/alga"]
 wide = ["simba/wide"]
 packed_simd = ["simba/packed_simd"]
+bytemuck = ["nalgebra/bytemuck"]
 
 serde-serialize = ["nalgebra/serde-serialize"]
